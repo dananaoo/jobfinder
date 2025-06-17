@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.egg-info/
+*.egg
+*.log
+
+# Virtual env
+venv/
+.env
+.env.*
+
+# VSCode / PyCharm
+.vscode/
+.idea/
+
+# Alembic
+alembic/versions/*.pyc
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter / Notebook
+.ipynb_checkpoints
+
+# Docker
+*.sqlite3
+*.db
+docker-compose.override.yml
+
+# Ignore compiled files
+*.so
+*.out
+
+# Logs & dumps
+*.log
+*.bak
+*.tmp
+
+# Coverage & testing
+htmlcov/
+.tox/
+.coverage
+.cache/
+.pytest_cache/
+
+# Migrations backup
+migrations/
+
+# Build
+build/
+dist/
