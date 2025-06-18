@@ -2,7 +2,9 @@ version: '3'
 
 services:
   backend:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     ports:
       - "8000:8000"
@@ -10,11 +12,31 @@ services:
       - .:/code
     env_file:
       - .env
+    depends_on:
+      - db
 
   job_updater:
-    build: .
-    command: python app/update_jobs.py
+    build:
+      context: .
+      dockerfile: jobs_updater/Dockerfile
     volumes:
       - .:/code
     env_file:
       - .env
+    depends_on:
+      - db
+    command: python jobs_updater/update_jobs.py
+
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: jobs
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  pgdata:

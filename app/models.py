@@ -11,6 +11,8 @@ class JobPost(Base):
     source = Column(String, default="telegram")
     link = Column(String, nullable=True)
     published_at = Column(DateTime, default=datetime.utcnow)
+    salary = Column(Integer, nullable=True) 
+    location = Column(String, nullable=True)  # для сравнения с desired_city
 
 class UserProfile(Base):
     __tablename__ = "user_profiles"
@@ -20,7 +22,6 @@ class UserProfile(Base):
     full_name = Column(String)
     resume_text = Column(Text)
     desired_position = Column(String)
-    desired_salary = Column(String)
     skills = Column(Text)
     experience_level = Column(String)
     desired_salary = Column(Integer, nullable=True)

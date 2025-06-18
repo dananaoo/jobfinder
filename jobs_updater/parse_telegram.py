@@ -14,7 +14,8 @@ channels = ["jobforjunior" , "remotejobss", "forfrontend", "forallqa", "fordesig
 # замени на нужный канал
 client = TelegramClient("tg_session", api_id, api_hash)
 
-FASTAPI_URL = "http://localhost:8000/jobs"
+FASTAPI_URL = "http://backend:8000/jobs"
+
 
 def post_job(title, description):
     data = {

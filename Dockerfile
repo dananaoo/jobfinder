@@ -2,11 +2,14 @@ FROM python:3.10-slim
 
 WORKDIR /code
 
-COPY requirements.txt .
+# Обновляем pip
+RUN pip install --upgrade pip
 
-# ⚡ Быстрее, без --no-cache-dir
+# Устанавливаем PyMuPDF отдельно (с бинарником)
+RUN pip install pymupdf==1.22.3
+
+# Теперь устанавливаем остальные зависимости
+COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 COPY . .
-
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

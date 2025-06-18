@@ -13,7 +13,10 @@ from app.models import JobPost, UserProfile
 from sqlalchemy import select, delete
 from datetime import datetime, timedelta
 load_dotenv()
+DATABASE_URL = os.getenv("DATABASE_URL")
 
+import time
+import asyncpg
 from app.db import AsyncSessionLocal
 from app import schemas, crud
 from app.schemas import UserProfileCreate, UserProfileOut, JobPostOut
@@ -29,6 +32,25 @@ app = FastAPI()
 async def get_db() -> AsyncSession:
     async with AsyncSessionLocal() as session:
         yield session
+
+
+
+async def wait_for_db():
+    for _ in range(10):
+        try:
+            conn = await asyncpg.connect(DATABASE_URL.replace("postgresql+asyncpg", "postgresql"))
+            await conn.close()
+            return
+        except Exception as e:
+            print("Waiting for DB...", e)
+            time.sleep(2)
+
+@app.on_event("startup")
+async def startup_all():
+    await wait_for_db()
+    await asyncio.sleep(1)
+
+    asyncio.create_task(clean_old_jobs())
 
 # 🌱 Тестовый рут
 @app.get("/")
@@ -56,7 +78,6 @@ async def read_profile(telegram_id: str, db: AsyncSession = Depends(get_db)):
     if profile is None:
         raise HTTPException(status_code=404, detail="Profile not found")
     return profile
-@app.get("/recommendations/{telegram_id}", response_model=List[schemas.JobPostOut])
 
 
 
@@ -161,13 +182,15 @@ async def recommend_jobs(telegram_id: str = Query(...), db: AsyncSession = Depen
     return matched_jobs[:30]
 
 async def clean_old_jobs():
+    await asyncio.sleep(2)  # Подстраховка, чтобы БД точно поднялась
     while True:
-        async with AsyncSessionLocal() as db:
-            cutoff_date = datetime.utcnow() - timedelta(days=30)
-            await db.execute(delete(JobPost).where(JobPost.published_at < cutoff_date))
-            await db.commit()
-        await asyncio.sleep(86400) 
+        try:
+            async with AsyncSessionLocal() as db:
+                cutoff_date = datetime.utcnow() - timedelta(days=30)
+                await db.execute(delete(JobPost).where(JobPost.published_at < cutoff_date))
+                await db.commit()
+        except Exception as e:
+            print("❌ Ошибка при очистке старых job'ов:", e)
+        await asyncio.sleep(86400)  # раз в сутки
 
-@app.on_event("startup")
-async def start_cleaner():
-    asyncio.create_task(clean_old_jobs())
+

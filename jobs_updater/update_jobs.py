@@ -1,6 +1,6 @@
 import asyncio
 import time
-from app.parse_telegram import main as parse_telegram_main
+from parse_telegram import main as parse_telegram_main
 
 INTERVAL_SECONDS = 30 * 60  # 30 минут
 
