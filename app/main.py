@@ -153,30 +153,45 @@ async def recommend_jobs(telegram_id: str = Query(...), db: AsyncSession = Depen
     if not profile:
         raise HTTPException(status_code=404, detail="User profile not found")
 
-    query = select(JobPost)
-
-    if profile.desired_city:
-        query = query.where(JobPost.location.ilike(f"%{profile.desired_city}%"))
-    if profile.desired_format:
-        query = query.where(JobPost.description.ilike(f"%{profile.desired_format}%"))
-    if profile.desired_work_time:
-        query = query.where(JobPost.description.ilike(f"%{profile.desired_work_time}%"))
-    if profile.desired_salary:
-        query = query.where(JobPost.salary >= profile.desired_salary * 0.8)
-
-    result = await db.execute(query)
+    result = await db.execute(select(JobPost))
     jobs = result.scalars().all()
 
-    user_skills = [s.strip().lower() for s in (profile.skills or "").split(",")]
+    user_skills = [s.strip().lower() for s in (profile.skills or "").split(",") if s.strip()]
+    user_industries = [i.strip().lower() for i in (profile.industries or "").split(",") if i.strip()]
+    user_city = (profile.desired_city or "").lower()
+    user_format = (profile.desired_format or "").lower()
+    user_work_time = (profile.desired_work_time or "").lower()
 
-    def skill_match_count(job):
-        job_text = f"{job.title} {job.description}".lower()
-        return sum(skill in job_text for skill in user_skills)
+    def relevance_score(job: JobPost) -> int:
+        score = 0
+        job_text = f"{job.title} {job.description} {(job.location or '')}".lower()
 
-    matched_jobs = [job for job in jobs if skill_match_count(job) > 0]
-    matched_jobs.sort(key=skill_match_count, reverse=True)
+        # 🎯 Совпадения по индустриям
+        if any(ind in job_text for ind in user_industries):
+            score += 5
 
-    return matched_jobs[:30]
+        # 🔧 Совпадения по скиллам
+        score += sum(1 for skill in user_skills if skill in job_text)
+
+        # 📍 Город
+        if user_city and user_city in job_text:
+            score += 1
+        # 🧑‍💻 Формат работы
+        if user_format and user_format in job_text:
+            score += 1
+        # ⏱️ Время работы
+        if user_work_time and user_work_time in job_text:
+            score += 1
+
+        return score
+
+    # 💡 Фильтруем только те, где есть хотя бы 1 очко
+    scored_jobs = [(job, relevance_score(job)) for job in jobs]
+    filtered = [job for job, score in scored_jobs if score > 0]
+    sorted_jobs = sorted(filtered, key=lambda x: relevance_score(x), reverse=True)
+
+    return sorted_jobs[:30]
+
 
 
 # 🧹 Очистка устаревших вакансий
