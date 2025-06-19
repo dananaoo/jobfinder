@@ -16,6 +16,8 @@ from app.models import JobPost, UserProfile
 from app import schemas, crud
 from app.schemas import UserProfileCreate, UserProfileOut, JobPostOut
 from app.crud import create_user_profile, get_user_profile, recommend_jobs_for_user, create_or_update_job_post
+from app.utils.pdf import extract_text_from_pdf
+from app.utils.gemini import extract_json_from_response, analyze_resume_with_gemini
 
 
 load_dotenv()
@@ -78,39 +80,15 @@ async def read_profile(telegram_id: str, db: AsyncSession = Depends(get_db)):
 
 
 # 📄 Чтение текста из PDF
-async def extract_text_from_pdf(file: UploadFile) -> str:
-    content = await file.read()
-    doc = fitz.open(stream=content, filetype="pdf")
-    text = ""
-    for page in doc:
-        text += page.get_text()
-    return text
+# (функция extract_text_from_pdf перенесена в app/utils/pdf.py)
 
 
 # 🧠 JSON из ответа Gemini
-def extract_json_from_response(text: str) -> dict:
-    try:
-        json_str = re.search(r"\{.*\}", text, re.DOTALL).group()
-        return json.loads(json_str)
-    except Exception as e:
-        print("❌ Ошибка JSON:", e)
-        raise HTTPException(status_code=500, detail="Gemini вернул невалидный JSON")
+# (функция extract_json_from_response перенесена в app/utils/gemini.py)
 
 
 # 🧠 Gemini: анализ резюме
-def analyze_resume_with_gemini(text: str) -> dict:
-    prompt = f"""
-Ты — AI-ассистент. Извлеки ключевые данные из этого резюме:\n{text}\n
-Верни JSON с полями:
-- skills (список)
-- experience_level (junior/middle/senior)
-- desired_position (строка)
-"""
-    model = genai.GenerativeModel("models/gemini-1.5-flash")
-    response = model.generate_content(prompt)
-    raw_text = response.text.strip()
-    print("📥 Ответ от Gemini:", raw_text)
-    return extract_json_from_response(raw_text)
+# (функция analyze_resume_with_gemini перенесена в app/utils/gemini.py)
 
 
 # 📤 Обработка и обновление профиля
@@ -127,22 +105,36 @@ async def upload_resume(
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
 
+    # Всегда обновляем текст резюме
     profile.resume_text = text
-    profile.skills = ", ".join(gpt_data.get("skills", []))
-    profile.experience_level = gpt_data.get("experience_level")
-    profile.desired_position = gpt_data.get("desired_position")
+
+    # Список всех полей профиля, которые можно обновлять (кроме id, telegram_id, resume_text)
+    updatable_fields = [
+        "full_name", "gender", "phone_number", "email", "citizenship", "address",
+        "education", "experience", "experience_level", "skills", "languages", "interests", "achievements",
+        "desired_position", "desired_salary", "desired_city", "desired_format", "desired_work_time", "industries"
+    ]
+    bad_values = {"string", "none", "null", ""}
+    for field in updatable_fields:
+        if field in gpt_data:
+            value = gpt_data[field]
+            # skills всегда строка
+            if isinstance(value, list) or isinstance(value, dict):
+                value = json.dumps(value, ensure_ascii=False)
+            if isinstance(value, str) and value.strip().lower() in bad_values:
+                continue
+            if isinstance(value, int) and value == 0 and field != "desired_salary":
+                continue
+            setattr(profile, field, value)
+    # resume_text всегда обновляется выше
 
     await db.commit()
     await db.refresh(profile)
 
+    # Возвращаем все основные поля профиля
     return {
         "message": "Резюме обработано и профиль обновлён",
-        "profile": {
-            "id": profile.id,
-            "skills": profile.skills,
-            "experience_level": profile.experience_level,
-            "desired_position": profile.desired_position
-        }
+        "profile": {field: getattr(profile, field) for field in ["id", "full_name", "gender", "phone_number", "email", "citizenship", "address", "education", "experience", "experience_level", "skills", "languages", "interests", "achievements", "resume_text", "desired_position", "desired_salary", "desired_city", "desired_format", "desired_work_time", "industries"]}
     }
 
 
