@@ -98,5 +98,4 @@ async def main():
         await client.disconnect()
         logger.info("👋 Disconnected from Telegram")
 
-if __name__ == "__main__":
-    asyncio.run(main())
+

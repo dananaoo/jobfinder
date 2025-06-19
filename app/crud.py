@@ -1,30 +1,46 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from sqlalchemy.exc import IntegrityError
 from app.models import JobPost, UserProfile
 from app.schemas import JobPostCreate, UserProfileCreate
 
 
-# ✅ Создание вакансии (с проверкой на дубликат)
-async def create_job_post(db: AsyncSession, job: JobPostCreate):
+# ✅ Создание или обновление вакансии
+async def create_or_update_job_post(db: AsyncSession, job: JobPostCreate):
+    # Поиск дубликата по title + description + source
     result = await db.execute(
         select(JobPost).where(
-            JobPost.title == job.title,
-            JobPost.description == job.description,
-            JobPost.source == job.source,
+            and_(
+                JobPost.title == job.title,
+                JobPost.description == job.description,
+                JobPost.source == job.source
+            )
         )
     )
     existing_job = result.scalars().first()
 
     if existing_job:
-        return existing_job
+        # Обновим только нужные поля
+        for field in ["salary", "location", "deadline", "format", "work_time", "industry"]:
+            value = getattr(job, field, None)
+            if value is not None:
+                setattr(existing_job, field, value)
 
-    db_job = JobPost(**job.dict())
-    db.add(db_job)
-    await db.commit()
-    await db.refresh(db_job)
-    return db_job
+        await db.commit()
+        await db.refresh(existing_job)
+        return existing_job
+    else:
+        # Создание новой вакансии
+        try:
+            db_job = JobPost(**job.dict())
+            db.add(db_job)
+            await db.commit()
+            await db.refresh(db_job)
+            return db_job
+        except Exception as e:
+            print("❌ Error creating job:", e)
+            raise
 
 
 # ✅ Получить все вакансии

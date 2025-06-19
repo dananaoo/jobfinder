@@ -15,7 +15,7 @@ from app.db import AsyncSessionLocal
 from app.models import JobPost, UserProfile
 from app import schemas, crud
 from app.schemas import UserProfileCreate, UserProfileOut, JobPostOut
-from app.crud import create_user_profile, get_user_profile, recommend_jobs_for_user
+from app.crud import create_user_profile, get_user_profile, recommend_jobs_for_user, create_or_update_job_post
 
 
 load_dotenv()
@@ -57,7 +57,7 @@ async def root():
 # 📌 Вакансии
 @app.post("/jobs", response_model=schemas.JobPostOut)
 async def create_job(job: schemas.JobPostCreate, db: AsyncSession = Depends(get_db)):
-    return await crud.create_job_post(db, job)
+    return await create_or_update_job_post(db, job)
 
 @app.get("/jobs", response_model=List[schemas.JobPostOut])
 async def read_jobs(db: AsyncSession = Depends(get_db)):
