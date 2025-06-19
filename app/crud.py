@@ -4,10 +4,15 @@ from sqlalchemy import select, and_
 from sqlalchemy.exc import IntegrityError
 from app.models import JobPost, UserProfile
 from app.schemas import JobPostCreate, UserProfileCreate
+from datetime import datetime
 
 
 # ✅ Создание или обновление вакансии
 async def create_or_update_job_post(db: AsyncSession, job: JobPostCreate):
+    def make_naive(dt):
+        if dt is not None and getattr(dt, 'tzinfo', None) is not None:
+            return dt.replace(tzinfo=None)
+        return dt
     # Поиск дубликата по title + description + source
     result = await db.execute(
         select(JobPost).where(
@@ -19,6 +24,14 @@ async def create_or_update_job_post(db: AsyncSession, job: JobPostCreate):
         )
     )
     existing_job = result.scalars().first()
+
+    # Приводим даты к naive
+    job_data = job.dict()
+    for field in ["published_at", "deadline"]:
+        if job_data.get(field):
+            dt = job_data[field]
+            if getattr(dt, 'tzinfo', None) is not None:
+                job_data[field] = dt.replace(tzinfo=None)
 
     if existing_job:
         # Обновим только нужные поля
@@ -33,7 +46,7 @@ async def create_or_update_job_post(db: AsyncSession, job: JobPostCreate):
     else:
         # Создание новой вакансии
         try:
-            db_job = JobPost(**job.dict())
+            db_job = JobPost(**job_data)
             db.add(db_job)
             await db.commit()
             await db.refresh(db_job)

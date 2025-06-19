@@ -10,6 +10,7 @@ import fitz  # PyMuPDF
 import asyncpg
 import google.generativeai as genai
 from dotenv import load_dotenv
+from fastapi import APIRouter
 
 from app.db import AsyncSessionLocal
 from app.models import JobPost, UserProfile
@@ -18,6 +19,7 @@ from app.schemas import UserProfileCreate, UserProfileOut, JobPostOut
 from app.crud import create_user_profile, get_user_profile, recommend_jobs_for_user, create_or_update_job_post
 from app.utils.pdf import extract_text_from_pdf
 from app.utils.gemini import extract_json_from_response, analyze_resume_with_gemini
+from app.routes.jobs import router as jobs_router
 
 
 load_dotenv()
@@ -26,6 +28,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 app = FastAPI()
+app.include_router(jobs_router)
 
 
 # 📦 Dependency
@@ -57,13 +60,7 @@ async def root():
 
 
 # 📌 Вакансии
-@app.post("/jobs", response_model=schemas.JobPostOut)
-async def create_job(job: schemas.JobPostCreate, db: AsyncSession = Depends(get_db)):
-    return await create_or_update_job_post(db, job)
-
-@app.get("/jobs", response_model=List[schemas.JobPostOut])
-async def read_jobs(db: AsyncSession = Depends(get_db)):
-    return await crud.get_all_jobs(db)
+# (эндпоинты перенесены в app/routes/jobs.py)
 
 
 # 👤 Профили
