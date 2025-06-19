@@ -11,6 +11,7 @@ import asyncpg
 import google.generativeai as genai
 from dotenv import load_dotenv
 from fastapi import APIRouter
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.db import AsyncSessionLocal
 from app.models import JobPost, UserProfile
@@ -29,6 +30,14 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 app = FastAPI()
 app.include_router(jobs_router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # 📦 Dependency

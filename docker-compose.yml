@@ -38,5 +38,19 @@ services:
     ports:
       - "5432:5432"
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev
+    environment:
+      - HOST=0.0.0.0
+
 volumes:
   pgdata:

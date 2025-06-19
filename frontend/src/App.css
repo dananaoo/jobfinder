@@ -40,3 +40,184 @@
 .read-the-docs {
   color: #888;
 }
+
+/* LazyApply-inspired minimal UI + Job Cards */
+body {
+  background: #f7f8fa;
+}
+
+.navbar {
+  display: flex;
+  gap: 2rem;
+  background: #fff;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border-radius: 0 0 16px 16px;
+  margin-bottom: 2rem;
+}
+
+.navbar a {
+  color: #222;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 1.1rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.navbar a:hover {
+  background: #e6eaff;
+}
+
+.page {
+  background: #fff;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 2rem 2.5rem;
+  border-radius: 0;
+  box-shadow: none;
+  color: #222;
+}
+
+.jobs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.job-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  padding: 1.5rem 2rem;
+  transition: box-shadow 0.2s;
+  border: 1px solid #f0f0f0;
+  position: relative;
+}
+.job-card:hover {
+  box-shadow: 0 8px 32px rgba(100,108,255,0.10);
+  border-color: #646cff33;
+}
+.job-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+  color: #222;
+}
+.job-location {
+  color: #888;
+  font-size: 1rem;
+  margin-left: 0.7rem;
+}
+.job-salary {
+  color: #4b4;
+  font-weight: 600;
+  margin-top: 0.2rem;
+}
+.job-description {
+  margin: 1rem 0 0.5rem 0;
+  color: #333;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  max-height: 6.5em;
+  overflow: hidden;
+  position: relative;
+}
+.job-date {
+  font-size: 0.95rem;
+  color: #aaa;
+  margin-top: 0.7rem;
+}
+.job-link {
+  display: inline-block;
+  margin-top: 0.7rem;
+  color: #646cff;
+  font-weight: 500;
+  text-decoration: underline;
+  font-size: 1rem;
+}
+button {
+  background: #646cff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7em 1.5em;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-top: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+button:hover {
+  background: #535bf2;
+}
+
+input[type="file"] {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.profile-accordion {
+  max-width: 600px;
+  margin: 2rem auto 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.profile-section {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  border: 1.5px solid #f3f3f3;
+  overflow: hidden;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.profile-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 1.5rem;
+  cursor: pointer;
+  font-size: 1.15rem;
+  font-weight: 600;
+  background: #fff;
+  border-bottom: 1px solid #f6f6f6;
+  transition: background 0.2s;
+}
+.profile-section-header.incomplete {
+  color: #c94a4a;
+  background: #fff6f6;
+  border-left: 4px solid #e57373;
+}
+.profile-section-header.complete {
+  color: #2e7d32;
+  background: #f6fff6;
+  border-left: 4px solid #7ed957;
+}
+.profile-section-content {
+  padding: 1.1rem 1.5rem 1.3rem 1.5rem;
+  background: #fff;
+  animation: fadeIn 0.3s;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.profile-section-icon {
+  font-size: 1.3rem;
+  margin-left: 0.7rem;
+}
+.profile-section-edit {
+  margin-left: auto;
+  color: #aaa;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.profile-section-edit:hover {
+  color: #646cff;
+}
