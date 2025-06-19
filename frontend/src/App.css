@@ -221,3 +221,55 @@ input[type="file"] {
 .profile-section-edit:hover {
   color: #646cff;
 }
+
+/* Upload Resume page styles */
+.upload-resume-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 2px 16px 0 rgba(0,0,0,0.07);
+  padding: 32px 24px;
+  max-width: 420px;
+  margin: 40px auto 0 auto;
+  color: #222;
+}
+.upload-resume-container h2 {
+  margin-bottom: 18px;
+}
+.upload-resume-container input[type="file"] {
+  margin-bottom: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 8px;
+  background: #fafafa;
+}
+.upload-resume-container button {
+  background: #2e7d32;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.upload-resume-container button:disabled {
+  background: #bdbdbd;
+  cursor: not-allowed;
+}
+.upload-resume-container .job-card {
+  margin-top: 24px;
+  background: #f8f8f8;
+  border-radius: 12px;
+  box-shadow: 0 1px 6px 0 rgba(0,0,0,0.04);
+  padding: 18px 20px;
+  width: 100%;
+}
+.upload-resume-container .job-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 4px;
+}
