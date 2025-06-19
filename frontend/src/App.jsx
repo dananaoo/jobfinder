@@ -140,7 +140,43 @@ function AchievementsList({ achievements }) {
 }
 
 function Home() {
-  return <div className="page"><h2>Welcome to TG Jobs MVP</h2><p>Find jobs, upload your resume, and get recommendations!</p></div>;
+  return (
+    <div className="landing">
+      <div className="landing-hero">
+        <div className="landing-hero-content">
+          <h1 className="landing-title">
+            Find your dream <span className="landing-title-accent">job</span>
+          </h1>
+          <div className="landing-subtitle">
+            LazyJumys helps you find the best jobs and fill your profile in seconds. Upload your resume, get AI-powered recommendations, and apply in one click.
+          </div>
+          <form className="landing-search" onSubmit={e => {e.preventDefault(); window.location.href='/jobs';}}>
+            <input type="text" placeholder="Job title or company" disabled />
+            <button className="landing-search-btn" type="submit">Find Job</button>
+          </form>
+          <div className="landing-partners">Over 2000+ trusted partners around the world</div>
+        </div>
+        <img className="landing-hero-img" src="/cv-hero.png" alt="hero" />
+      </div>
+      <div className="landing-features">
+        <div className="feature-card">
+          <div className="feature-icon">🤖</div>
+          <div className="feature-title">AI-анализ резюме</div>
+          <div className="feature-desc">Заполни профиль за 1 клик — мы сами вытащим все нужные данные из PDF.</div>
+        </div>
+        <div className="feature-card">
+          <div className="feature-icon">💼</div>
+          <div className="feature-title">Вакансии из Telegram</div>
+          <div className="feature-desc">Актуальные предложения с топовых каналов и ботов — всё в одном месте.</div>
+        </div>
+        <div className="feature-card">
+          <div className="feature-icon">✨</div>
+          <div className="feature-title">Персональные рекомендации</div>
+          <div className="feature-desc">Умные подсказки и подборки — только то, что подходит именно тебе.</div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function Jobs() {
@@ -374,20 +410,75 @@ function UploadResume() {
   );
 }
 
+function Recommendations() {
+  const [recs, setRecs] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchRecs = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_URL}/recommendations?telegram_id=${TELEGRAM_ID}`);
+      if (!res.ok) throw new Error('Failed to fetch recommendations');
+      const data = await res.json();
+      setRecs(data);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchRecs(); }, []);
+
+  return (
+    <div className="page">
+      <h2>Recommendations</h2>
+      <button onClick={fetchRecs} disabled={loading}>{loading ? 'Refreshing...' : 'Refresh'}</button>
+      {error && <div style={{color: 'red', marginTop: 10}}>{error}</div>}
+      <div className="jobs-list">
+        {recs.length === 0 && !loading && <div>No recommendations found.</div>}
+        {recs.map((rec, i) => (
+          <div className="job-card" key={rec.id || i}>
+            <div className="job-title">{rec.title}
+              {rec.location && <span className="job-location">{rec.location}</span>}
+            </div>
+            {rec.salary && <div className="job-salary">Salary: {rec.salary}</div>}
+            <div className="job-description">{rec.description}</div>
+            {rec.reasons && Array.isArray(rec.reasons) && (
+              <div style={{marginTop:10}}>
+                <b>Why recommended:</b>
+                <ul style={{margin:'6px 0 0 0',paddingLeft:18}}>
+                  {rec.reasons.map((r, idx) => <li key={idx}>{r}</li>)}
+                </ul>
+              </div>
+            )}
+            {rec.link && <a className="job-link" href={rec.link} target="_blank" rel="noopener noreferrer">Подробнее</a>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function App() {
   return (
     <Router>
       <nav className="navbar">
+        <span className="brand-lazyjumys">LazyJumys</span>
         <Link to="/">Home</Link>
         <Link to="/jobs">Vacancies</Link>
         <Link to="/profile">Profile</Link>
         <Link to="/upload-resume">Upload Resume</Link>
+        <Link to="/recommendations">Recommendations</Link>
       </nav>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/upload-resume" element={<UploadResume />} />
+        <Route path="/recommendations" element={<Recommendations />} />
       </Routes>
     </Router>
   );
