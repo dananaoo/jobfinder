@@ -4,6 +4,7 @@ import './App.css';
 import Home from './Home.jsx';
 import Jobs from './Jobs.jsx';
 import Profile from './Profile.jsx';
+import AuthModal from './AuthModal.jsx';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const TELEGRAM_ID = '1';
@@ -255,6 +256,24 @@ function Recommendations() {
 }
 
 function App() {
+  const [user, setUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('user'));
+    } catch {
+      return null;
+    }
+  });
+  const [authOpen, setAuthOpen] = useState(false);
+
+  const handleAuthSuccess = (userData) => {
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('user');
+  };
+
   return (
     <Router>
       <nav className="navbar">
@@ -264,14 +283,25 @@ function App() {
         <Link to="/profile">Profile</Link>
         <Link to="/upload-resume">Upload Resume</Link>
         <Link to="/recommendations">Recommendations</Link>
+        <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:12}}>
+          {user ? (
+            <>
+              <span style={{fontWeight:600}}>{user.first_name || user.email || user.phone}</span>
+              <button onClick={handleLogout} style={{background:'#c94a4a'}}>Logout</button>
+            </>
+          ) : (
+            <button onClick={()=>setAuthOpen(true)}>Login</button>
+          )}
+        </div>
       </nav>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/jobs" element={<Jobs />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile" element={<Profile user={user} />} />
         <Route path="/upload-resume" element={<UploadResume />} />
         <Route path="/recommendations" element={<Recommendations />} />
       </Routes>
+      <AuthModal open={authOpen} onClose={()=>setAuthOpen(false)} onAuthSuccess={handleAuthSuccess} />
     </Router>
   );
 }

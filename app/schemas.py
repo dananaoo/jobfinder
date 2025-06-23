@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 
 
 # =====================
@@ -49,11 +49,43 @@ class UserProfileBase(BaseModel):
     industries: Optional[str] = None
 
 class UserProfileCreate(UserProfileBase):
-    telegram_id: str
+    telegram_id: Optional[str] = None
 
 class UserProfileOut(UserProfileBase):
     id: int
-    telegram_id: str
+    telegram_id: Optional[str] = None
 
     class Config:
         from_attributes = True
+
+
+# =====================
+# 👤 USER
+# =====================
+class UserBase(BaseModel):
+    first_name: str
+    last_name: str
+    email: Union[str, None] = None
+    phone: Union[str, None] = None
+
+class UserCreate(UserBase):
+    password: str
+    user_profile_id: int
+
+class UserOut(UserBase):
+    id: int
+    user_profile_id: int
+    class Config:
+        from_attributes = True
+
+class UserLogin(BaseModel):
+    email: Union[str, None] = None
+    phone: Union[str, None] = None
+    password: str
+
+class UserRegister(BaseModel):
+    first_name: str
+    last_name: str
+    email: Union[str, None] = None
+    phone: Union[str, None] = None
+    password: str

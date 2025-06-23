@@ -1,6 +1,8 @@
 from sqlalchemy import Column, Integer, String, DateTime, Text
 from app.db import Base
 from datetime import datetime
+from sqlalchemy.orm import relationship
+from sqlalchemy import ForeignKey, UniqueConstraint
 
 
 class JobPost(Base):
@@ -21,7 +23,8 @@ class UserProfile(Base):
     __tablename__ = "user_profiles"
 
     id = Column(Integer, primary_key=True, index=True)
-    telegram_id = Column(String, unique=True, nullable=False)
+    telegram_id = Column(String, unique=True, nullable=True)
+
 
     # Личная информация
     full_name = Column(String)
@@ -48,3 +51,19 @@ class UserProfile(Base):
     desired_format = Column(String, nullable=True)      # онлайн, офлайн, гибрид
     desired_work_time = Column(String, nullable=True)   # full-time, part-time
     industries = Column(String, nullable=True)          # тип компании / домен
+
+
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    first_name = Column(String, nullable=False)
+    last_name = Column(String, nullable=False)
+    email = Column(String, unique=True, nullable=True)
+    phone = Column(String, unique=True, nullable=True)
+    hashed_password = Column(String, nullable=False)
+    user_profile_id = Column(Integer, ForeignKey("user_profiles.id"), unique=True)
+    profile = relationship("UserProfile", backref="user", uselist=False)
+    __table_args__ = (
+        UniqueConstraint('email', name='uq_user_email'),
+        UniqueConstraint('phone', name='uq_user_phone'),
+    )

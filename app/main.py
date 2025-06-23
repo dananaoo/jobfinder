@@ -1,5 +1,5 @@
 import asyncio
-from fastapi import FastAPI, Depends, UploadFile, File, Form, HTTPException, Query
+from fastapi import FastAPI, Depends, UploadFile, File, Form, HTTPException, Query, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
 from typing import List
@@ -21,6 +21,7 @@ from app.crud import create_user_profile, get_user_profile, recommend_jobs_for_u
 from app.utils.pdf import extract_text_from_pdf
 from app.utils.gemini import extract_json_from_response, analyze_resume_with_gemini
 from app.routes.jobs import router as jobs_router
+from app.routes.auth import router as auth_router
 
 
 load_dotenv()
@@ -30,6 +31,7 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 app = FastAPI()
 app.include_router(jobs_router)
+app.include_router(auth_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -77,11 +79,43 @@ async def root():
 async def create_profile(profile: UserProfileCreate, db: AsyncSession = Depends(get_db)):
     return await create_user_profile(db, profile)
 
-@app.get("/profile/{telegram_id}", response_model=UserProfileOut)
-async def read_profile(telegram_id: str, db: AsyncSession = Depends(get_db)):
-    profile = await get_user_profile(db, telegram_id)
+@app.get("/profile", response_model=UserProfileOut)
+async def read_profile(email: str = None, phone: str = None, db: AsyncSession = Depends(get_db)):
+    if not email and not phone:
+        raise HTTPException(status_code=400, detail="Нужно передать email или телефон")
+    query = None
+    if email:
+        query = select(UserProfile).where(UserProfile.email == email)
+    else:
+        query = select(UserProfile).where(UserProfile.phone_number == phone)
+    result = await db.execute(query)
+    profile = result.scalars().first() 
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
+    return profile
+
+@app.put("/profile", response_model=UserProfileOut)
+async def update_profile(
+    email: str = None,
+    phone: str = None,
+    profile_data: schemas.UserProfileCreate = Body(...),
+    db: AsyncSession = Depends(get_db)
+):
+    if not email and not phone:
+        raise HTTPException(status_code=400, detail="Нужно передать email или телефон")
+    query = select(UserProfile)
+    if email:
+        query = query.where(UserProfile.email == email)
+    else:
+        query = query.where(UserProfile.phone_number == phone)
+    result = await db.execute(query)
+    profile = result.scalars().first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    for field, value in profile_data.dict(exclude_unset=True).items():
+        setattr(profile, field, value)
+    await db.commit()
+    await db.refresh(profile)
     return profile
 
 

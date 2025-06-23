@@ -2,9 +2,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import select, and_
 from sqlalchemy.exc import IntegrityError
-from app.models import JobPost, UserProfile
-from app.schemas import JobPostCreate, UserProfileCreate
+from app.models import JobPost, UserProfile, User
+from app.schemas import JobPostCreate, UserProfileCreate, UserCreate
 from datetime import datetime
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 # ✅ Создание или обновление вакансии
@@ -110,3 +113,35 @@ async def recommend_jobs_for_user(db: AsyncSession, user: UserProfile) -> list[J
 
     result = await db.execute(stmt)
     return result.scalars().all()
+
+
+async def get_user_by_email_or_phone(db: AsyncSession, email: str = None, phone: str = None):
+    query = None
+    if email:
+        query = select(User).where(User.email == email)
+    elif phone:
+        query = select(User).where(User.phone == phone)
+    if query is None:
+        return None
+    result = await db.execute(query)
+    return result.scalar_one_or_none()
+
+
+async def create_user(db: AsyncSession, user: UserCreate):
+    hashed_password = pwd_context.hash(user.password)
+    db_user = User(
+        first_name=user.first_name,
+        last_name=user.last_name,
+        email=user.email,
+        phone=user.phone,
+        hashed_password=hashed_password,
+        user_profile_id=user.user_profile_id
+    )
+    db.add(db_user)
+    await db.commit()
+    await db.refresh(db_user)
+    return db_user
+
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
