@@ -70,11 +70,9 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
-    user_profile_id: int
 
 class UserOut(UserBase):
     id: int
-    user_profile_id: int
     class Config:
         from_attributes = True
 

@@ -36,13 +36,19 @@ function Profile({ user }) {
   const [formState, setFormState] = useState({});
 
   const fetchProfile = useCallback(async () => {
-    if (!user) return;
+    if (!user || !user.token) return;
     setLoading(true);
     setError(null);
     try {
-      const url = user.email ? `${API_URL}/profile?email=${encodeURIComponent(user.email)}` : `${API_URL}/profile?phone=${encodeURIComponent(user.phone)}`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('Profile not found');
+      const res = await fetch(`${API_URL}/profile`, {
+        headers: {
+          'Authorization': `Bearer ${user.token}`
+        }
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`Profile not found: ${errText}`);
+      }
       const data = await res.json();
       setProfile(data);
     } catch (e) {
@@ -99,10 +105,12 @@ function Profile({ user }) {
     }
     
     try {
-        const url = user.email ? `${API_URL}/profile?email=${encodeURIComponent(user.email)}` : `${API_URL}/profile?phone=${encodeURIComponent(user.phone)}`;
-        const res = await fetch(url, {
+        const res = await fetch(`${API_URL}/profile`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${user.token}`
+            },
             body: JSON.stringify(body),
         });
         if (!res.ok) {

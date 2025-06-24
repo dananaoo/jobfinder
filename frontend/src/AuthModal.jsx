@@ -56,8 +56,21 @@ export default function AuthModal({ open, onClose, onAuthSuccess }) {
           const err = await res.json().catch(() => ({}));
           throw new Error(err.detail || 'Ошибка регистрации');
         }
-        const data = await res.json();
-        onAuthSuccess(data);
+        
+        // После успешной регистрации сразу логинимся, чтобы получить токен
+        const loginRes = await fetch(`${API_URL}/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: form.email || undefined,
+                phone: form.phone || undefined,
+                password: form.password
+            })
+        });
+        if (!loginRes.ok) throw new Error('Не удалось войти после регистрации');
+        
+        const loginData = await loginRes.json();
+        onAuthSuccess(loginData);
         onClose();
       }
     } catch (e) {

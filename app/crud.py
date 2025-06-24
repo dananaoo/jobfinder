@@ -129,14 +129,24 @@ async def get_user_by_email_or_phone(db: AsyncSession, email: str = None, phone:
 
 async def create_user(db: AsyncSession, user: UserCreate):
     hashed_password = pwd_context.hash(user.password)
+    
+    # Создаём пустой профиль
+    db_profile = UserProfile(
+        full_name=f"{user.first_name} {user.last_name}",
+        email=user.email,
+        phone_number=user.phone
+    )
+
+    # Создаём пользователя и сразу связываем с профилем
     db_user = User(
         first_name=user.first_name,
         last_name=user.last_name,
         email=user.email,
         phone=user.phone,
         hashed_password=hashed_password,
-        user_profile_id=user.user_profile_id
+        profile=db_profile
     )
+    
     db.add(db_user)
     await db.commit()
     await db.refresh(db_user)

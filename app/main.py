@@ -14,14 +14,14 @@ from fastapi import APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.db import AsyncSessionLocal
-from app.models import JobPost, UserProfile
+from app.models import JobPost, UserProfile, User
 from app import schemas, crud
 from app.schemas import UserProfileCreate, UserProfileOut, JobPostOut
 from app.crud import create_user_profile, get_user_profile, recommend_jobs_for_user, create_or_update_job_post
 from app.utils.pdf import extract_text_from_pdf
 from app.utils.gemini import extract_json_from_response, analyze_resume_with_gemini
 from app.routes.jobs import router as jobs_router
-from app.routes.auth import router as auth_router
+from app.routes.auth import router as auth_router, get_current_user
 
 
 load_dotenv()
@@ -80,40 +80,27 @@ async def create_profile(profile: UserProfileCreate, db: AsyncSession = Depends(
     return await create_user_profile(db, profile)
 
 @app.get("/profile", response_model=UserProfileOut)
-async def read_profile(email: str = None, phone: str = None, db: AsyncSession = Depends(get_db)):
-    if not email and not phone:
-        raise HTTPException(status_code=400, detail="Нужно передать email или телефон")
-    query = None
-    if email:
-        query = select(UserProfile).where(UserProfile.email == email)
-    else:
-        query = select(UserProfile).where(UserProfile.phone_number == phone)
-    result = await db.execute(query)
-    profile = result.scalars().first() 
+async def read_profile(db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    result = await db.execute(select(UserProfile).where(UserProfile.user_id == current_user.id))
+    profile = result.scalars().first()
     if not profile:
-        raise HTTPException(status_code=404, detail="Profile not found")
+        raise HTTPException(status_code=404, detail="Profile not found for the current user")
     return profile
 
 @app.put("/profile", response_model=UserProfileOut)
 async def update_profile(
-    email: str = None,
-    phone: str = None,
     profile_data: schemas.UserProfileCreate = Body(...),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    if not email and not phone:
-        raise HTTPException(status_code=400, detail="Нужно передать email или телефон")
-    query = select(UserProfile)
-    if email:
-        query = query.where(UserProfile.email == email)
-    else:
-        query = query.where(UserProfile.phone_number == phone)
-    result = await db.execute(query)
+    result = await db.execute(select(UserProfile).where(UserProfile.user_id == current_user.id))
     profile = result.scalars().first()
     if not profile:
-        raise HTTPException(status_code=404, detail="Profile not found")
+        raise HTTPException(status_code=404, detail="Profile not found for the current user")
+    
     for field, value in profile_data.dict(exclude_unset=True).items():
         setattr(profile, field, value)
+    
     await db.commit()
     await db.refresh(profile)
     return profile
@@ -135,32 +122,19 @@ async def update_profile(
 @app.post("/upload_resume")
 async def upload_resume(
     file: UploadFile = File(...),
-    email: str = Form(None),
-    phone: str = Form(None),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     text = await extract_text_from_pdf(file)
     gpt_data = analyze_resume_with_gemini(text)
 
-    if not email and not phone:
-        raise HTTPException(status_code=400, detail="Нужно передать email или телефон")
-    
-    query = select(UserProfile)
-    if email:
-        query = query.where(UserProfile.email == email)
-    else:
-        query = query.where(UserProfile.phone_number == phone)
-    
-    result = await db.execute(query)
+    result = await db.execute(select(UserProfile).where(UserProfile.user_id == current_user.id))
     profile = result.scalars().first()
-
     if not profile:
-        raise HTTPException(status_code=404, detail="Profile not found")
+        raise HTTPException(status_code=404, detail="Profile not found for the current user")
 
-    # Всегда обновляем текст резюме
     profile.resume_text = text
 
-    # Список всех полей профиля, которые можно обновлять (кроме id, telegram_id, resume_text, email, phone_number)
     updatable_fields = [
         "full_name", "gender", "citizenship", "address",
         "education", "experience", "experience_level", "skills", "languages", "interests", "achievements",
@@ -186,7 +160,11 @@ async def upload_resume(
     # Возвращаем все основные поля профиля
     return {
         "message": "Резюме обработано и профиль обновлён",
-        "profile": {field: getattr(profile, field) for field in ["id", "full_name", "gender", "phone_number", "email", "citizenship", "address", "education", "experience", "experience_level", "skills", "languages", "interests", "achievements", "resume_text", "desired_position", "desired_salary", "desired_city", "desired_format", "desired_work_time", "industries"]}
+        "profile": {field: getattr(profile, field) for field in [
+            "id", "full_name", "gender", "phone_number", "email", "citizenship", "address", "education",
+            "experience", "experience_level", "skills", "languages", "interests", "achievements", "resume_text",
+            "desired_position", "desired_salary", "desired_city", "desired_format", "desired_work_time", "industries"
+        ]}
     }
 
 

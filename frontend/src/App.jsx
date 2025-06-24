@@ -161,8 +161,8 @@ function UploadResume({ user }) {
       setError('Please select a PDF file.');
       return;
     }
-    if (!user) {
-      setError('Please log in to upload a resume.');
+    if (!user || !user.id || !user.token) {
+      setError('User not authenticated.');
       return;
     }
     setLoading(true);
@@ -171,25 +171,14 @@ function UploadResume({ user }) {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      let hasIdentifier = false;
-      if (user.email && user.email.trim()) {
-        formData.append('email', user.email);
-        hasIdentifier = true;
-      } else if (user.phone && user.phone.trim()) {
-        formData.append('phone', user.phone);
-        hasIdentifier = true;
-      }
-      if (!hasIdentifier) {
-        setError('User identifier (email or phone) not found.');
-        setLoading(false);
-        return;
-      }
-      // DEBUG: log FormData
-      for (let pair of formData.entries()) {
-        console.log(pair[0]+ ': ' + pair[1]);
-      }
+      
+      const headers = {
+        'Authorization': `Bearer ${user.token}`
+      };
+
       const res = await fetch(`${API_URL}/upload_resume`, {
         method: 'POST',
+        headers: headers,
         body: formData
       });
       if (!res.ok) throw new Error('Failed to upload resume');
@@ -223,7 +212,7 @@ function UploadResume({ user }) {
   );
 }
 
-function Recommendations() {
+function Recommendations({ user }) {
   const [recs, setRecs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -278,16 +267,25 @@ function Recommendations() {
 function App() {
   const [user, setUser] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem('user'));
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        return JSON.parse(storedUser);
+      }
+      return null;
     } catch {
       return null;
     }
   });
   const [authOpen, setAuthOpen] = useState(false);
 
-  const handleAuthSuccess = (userData) => {
+  const handleAuthSuccess = (authData) => {
+    const userData = {
+        id: authData.user_id,
+        token: authData.access_token
+    };
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
+    setAuthOpen(false);
   };
   const handleLogout = () => {
     setUser(null);
@@ -321,7 +319,7 @@ function App() {
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/profile" element={<Profile user={user} />} />
         <Route path="/upload-resume" element={<UploadResume user={user} />} />
-        <Route path="/recommendations" element={<Recommendations />} />
+        <Route path="/recommendations" element={<Recommendations user={user} />} />
       </Routes>
       <AuthModal open={authOpen} onClose={()=>setAuthOpen(false)} onAuthSuccess={handleAuthSuccess} />
     </Router>

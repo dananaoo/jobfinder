@@ -10,3 +10,6 @@ python-multipart
 #PyMuPDF
 google-generativeai
 passlib[bcrypt]
+python-jose[cryptography]
+uvloop
+httptools

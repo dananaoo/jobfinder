@@ -23,6 +23,8 @@ class UserProfile(Base):
     __tablename__ = "user_profiles"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
+    user = relationship("User", back_populates="profile")
     telegram_id = Column(String, unique=True, nullable=True)
 
 
@@ -61,8 +63,8 @@ class User(Base):
     email = Column(String, unique=True, nullable=True)
     phone = Column(String, unique=True, nullable=True)
     hashed_password = Column(String, nullable=False)
-    user_profile_id = Column(Integer, ForeignKey("user_profiles.id"), unique=True)
-    profile = relationship("UserProfile", backref="user", uselist=False)
+    profile = relationship("UserProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    
     __table_args__ = (
         UniqueConstraint('email', name='uq_user_email'),
         UniqueConstraint('phone', name='uq_user_phone'),
