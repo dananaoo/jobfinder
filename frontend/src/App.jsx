@@ -265,63 +265,69 @@ function Recommendations({ user }) {
 }
 
 function App() {
-  const [user, setUser] = useState(() => {
+  const [user, setUser] = useState(null);
+  const [isAuthModalOpen, setAuthModalOpen] = useState(false);
+
+  useEffect(() => {
     try {
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
-        return JSON.parse(storedUser);
+        setUser(JSON.parse(storedUser));
       }
-      return null;
-    } catch {
-      return null;
+    } catch (error) {
+      console.error("Failed to parse user from localStorage", error);
+      localStorage.removeItem('user');
     }
-  });
-  const [authOpen, setAuthOpen] = useState(false);
+  }, []);
 
   const handleAuthSuccess = (authData) => {
     const userData = {
         id: authData.user_id,
-        token: authData.access_token
+        token: authData.access_token,
     };
-    setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
-    setAuthOpen(false);
+    setUser(userData);
   };
+
   const handleLogout = () => {
-    setUser(null);
     localStorage.removeItem('user');
+    setUser(null);
   };
 
   return (
     <Router>
-      <nav className="navbar">
-        <Link to="/" className="navbar-left">
-          <img src="/final-logo.png" alt="Logo" className="navbar-logo" />
-          <span className="brand-lazyjumys">LazyJumys</span>
-        </Link>
-        <div className="navbar-center">
-          <Link to="/">Home</Link>
-          <Link to="/jobs">Vacancies</Link>
-          <Link to="/profile">Profile</Link>
-          <Link to="/upload-resume">Upload Resume</Link>
-          <Link to="/recommendations">Recommendations</Link>
-        </div>
-        <div className="navbar-right">
-          {user ? (
-            <button onClick={handleLogout} className="logout-button">Logout</button>
-          ) : (
-            <button onClick={() => setAuthOpen(true)}>Login</button>
-          )}
-        </div>
-      </nav>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/jobs" element={<Jobs />} />
-        <Route path="/profile" element={<Profile user={user} />} />
-        <Route path="/upload-resume" element={<UploadResume user={user} />} />
-        <Route path="/recommendations" element={<Recommendations user={user} />} />
-      </Routes>
-      <AuthModal open={authOpen} onClose={()=>setAuthOpen(false)} onAuthSuccess={handleAuthSuccess} />
+      <header className="app-header">
+        <nav className="header-nav-container">
+          <div className="header-left">
+            <img src="/final-logo.png" alt="LazyJumys Logo" className="logo" />
+            <span className="company-name">LazyJumys</span>
+          </div>
+          <div className="header-nav">
+            <Link to="/">Home</Link>
+            <Link to="/jobs">Vacancies</Link>
+            {user && <Link to="/profile">Profile</Link>}
+            {user && <Link to="/upload-resume">Upload Resume</Link>}
+            {user && <Link to="/recommendations">Recommendations</Link>}
+          </div>
+          <div className="header-right">
+            {user ? (
+              <button onClick={handleLogout} className="logout-button">Logout</button>
+            ) : (
+              <button onClick={() => setAuthModalOpen(true)} className="login-button">Login</button>
+            )}
+          </div>
+        </nav>
+      </header>
+      <main className="app-content">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/jobs" element={<Jobs />} />
+          <Route path="/profile" element={<Profile user={user} />} />
+          <Route path="/upload-resume" element={<UploadResume user={user} />} />
+          <Route path="/recommendations" element={<Recommendations user={user}/>} />
+        </Routes>
+      </main>
+      {isAuthModalOpen && <AuthModal onClose={() => setAuthModalOpen(false)} onAuthSuccess={handleAuthSuccess} />}
     </Router>
   );
 }

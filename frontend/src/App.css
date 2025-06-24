@@ -6,8 +6,10 @@
 }
 
 .logo {
-  height: 6em;
-  padding: 1.5em;
+  height: 50px;
+  width: 50px;
+  object-fit: contain; /* Prevents image distortion */
+  padding: 0;
   will-change: filter;
   transition: filter 300ms;
 }
@@ -55,117 +57,105 @@ body {
   background: linear-gradient(135deg, #e0f1fa 0%, #e0c3fc 100%);
 }
 
-.navbar {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
+/* New Header Styles - Replaces all .navbar styles */
+.app-header {
   background: #fff;
-  padding: 0.75rem 2rem;
+  padding: 0.5rem 2rem;
   box-shadow: 0 2px 8px rgba(59,180,231,0.07);
   border-radius: 16px;
   max-width: 1200px;
   margin: 0 auto 32px auto;
-  min-height: 72px;
 }
 
-.navbar-left {
-  grid-column: 1;
+.header-nav-container {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 60px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
   text-decoration: none;
 }
 
-.navbar-logo {
-  width: 80px;
-  height: 80px;
+.logo {
+  height: 45px;
+  width: 45px;
   object-fit: contain;
-  border-radius: 12px;
-}
-
-.brand-lazyjumys {
-  font-size: 1.05rem;
-  font-weight: 600;
-  margin: 0;
   padding: 0;
-  line-height: 1;
-  display: flex;
-  align-items: center;
 }
 
+.company-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
 
-.navbar-center {
-  grid-column: 2;
+.header-nav {
   display: flex;
   gap: 1.5rem;
   align-items: center;
 }
 
-.navbar-center a {
-  color: #23243a;
+.header-nav a {
+  color: var(--text-main);
   font-weight: 600;
   text-decoration: none;
   font-size: 1.05rem;
-  padding: 0.3rem 0.7rem;
+  padding: 0.6em 0.7rem;
   border-radius: 8px;
   transition: background 0.2s, color 0.2s;
   white-space: nowrap;
 }
 
-.navbar-center a:hover {
+.header-nav a:hover {
   background: var(--primary-blue-light);
   color: var(--primary-blue);
 }
 
-.navbar-right {
-  grid-column: 3;
-  justify-self: end;
+.header-right {
   display: flex;
   align-items: center;
-  gap: 1.2rem;
+}
+
+.login-button, .logout-button {
+  border: none;
+  border-radius: 12px;
+  padding: 0.6em 1.5em;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.login-button {
+  background: var(--primary-blue-dark);
+  color: #fff;
+}
+
+.login-button:hover {
+  background: var(--accent-blue);
 }
 
 .logout-button {
   background: #e57373;
   color: #fff;
-  border: none;
-  border-radius: 12px;
-  padding: 0.7em 1.5em;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-  align-self: center;
-  height: 40px; /* 👉 или подгони под высоту ссылок */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
 }
+
 .logout-button:hover {
   background: #c94a4a;
 }
+/* End of New Header Styles */
 
 @media (max-width: 900px) {
-  .navbar {
-    grid-template-columns: 1fr;
-    justify-items: center;
+  .header-nav-container {
+    flex-direction: column;
     gap: 0.5rem;
-    padding: 1rem;
-  }
-  .navbar-left, .navbar-right {
-    grid-column: 1;
-    justify-self: center;
-  }
-  .navbar-center {
-    grid-column: 1;
-    gap: 0.8rem;
-    flex-wrap: wrap;
-    justify-content: center;
-    order: 3;
-  }
-  .navbar-right {
-    order: 2;
+    padding: 1rem 0;
   }
 }
 
@@ -179,7 +169,7 @@ body {
   border-radius: 28px;
   box-shadow: 0 4px 32px 0 rgba(140, 120, 200, 0.10);
   margin: 32px auto 0 auto;
-  max-width: 1000px;
+  max-width: 1200px;
   padding: 2.5rem 2.5rem;
   color: #23243a;
 }
@@ -395,6 +385,9 @@ input[type="file"] {
   align-items: center;
   padding: 0 0 60px 0;
   background: linear-gradient(135deg, #e0f1fa 0%, #e0c3fc 100%);
+  max-width: 1200px;
+  margin: 32px auto 0 auto;
+  padding: 0 2rem;
 }
 .landing-hero {
   margin-top: 48px;
@@ -512,7 +505,7 @@ input[type="file"] {
   color: var(--primary-blue);
 }
 .feature-desc {
-  color: #444;
+  color: var(--text-muted);
   font-size: 1.05rem;
 }
 
