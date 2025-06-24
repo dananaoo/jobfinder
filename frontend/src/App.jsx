@@ -277,20 +277,22 @@ function App() {
   return (
     <Router>
       <nav className="navbar">
-        <span className="brand-lazyjumys">LazyJumys</span>
-        <Link to="/">Home</Link>
-        <Link to="/jobs">Vacancies</Link>
-        <Link to="/profile">Profile</Link>
-        <Link to="/upload-resume">Upload Resume</Link>
-        <Link to="/recommendations">Recommendations</Link>
-        <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:12}}>
+        <Link to="/" className="navbar-left">
+          <img src="/final-logo.png" alt="Logo" className="navbar-logo" />
+          <span className="brand-lazyjumys">LazyJumys</span>
+        </Link>
+        <div className="navbar-center">
+          <Link to="/">Home</Link>
+          <Link to="/jobs">Vacancies</Link>
+          <Link to="/profile">Profile</Link>
+          <Link to="/upload-resume">Upload Resume</Link>
+          <Link to="/recommendations">Recommendations</Link>
+        </div>
+        <div className="navbar-right">
           {user ? (
-            <>
-              <span style={{fontWeight:600}}>{user.first_name || user.email || user.phone}</span>
-              <button onClick={handleLogout} style={{background:'#c94a4a'}}>Logout</button>
-            </>
+            <button onClick={handleLogout} className="logout-button">Logout</button>
           ) : (
-            <button onClick={()=>setAuthOpen(true)}>Login</button>
+            <button onClick={() => setAuthOpen(true)}>Login</button>
           )}
         </div>
       </nav>
