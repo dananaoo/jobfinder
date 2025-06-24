@@ -143,7 +143,7 @@ function AchievementsList({ achievements }) {
   );
 }
 
-function UploadResume() {
+function UploadResume({ user }) {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -161,13 +161,33 @@ function UploadResume() {
       setError('Please select a PDF file.');
       return;
     }
+    if (!user) {
+      setError('Please log in to upload a resume.');
+      return;
+    }
     setLoading(true);
     setError(null);
     setSuccess(null);
     try {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('telegram_id', TELEGRAM_ID);
+      let hasIdentifier = false;
+      if (user.email && user.email.trim()) {
+        formData.append('email', user.email);
+        hasIdentifier = true;
+      } else if (user.phone && user.phone.trim()) {
+        formData.append('phone', user.phone);
+        hasIdentifier = true;
+      }
+      if (!hasIdentifier) {
+        setError('User identifier (email or phone) not found.');
+        setLoading(false);
+        return;
+      }
+      // DEBUG: log FormData
+      for (let pair of formData.entries()) {
+        console.log(pair[0]+ ': ' + pair[1]);
+      }
       const res = await fetch(`${API_URL}/upload_resume`, {
         method: 'POST',
         body: formData
@@ -300,7 +320,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/profile" element={<Profile user={user} />} />
-        <Route path="/upload-resume" element={<UploadResume />} />
+        <Route path="/upload-resume" element={<UploadResume user={user} />} />
         <Route path="/recommendations" element={<Recommendations />} />
       </Routes>
       <AuthModal open={authOpen} onClose={()=>setAuthOpen(false)} onAuthSuccess={handleAuthSuccess} />

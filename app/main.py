@@ -135,22 +135,34 @@ async def update_profile(
 @app.post("/upload_resume")
 async def upload_resume(
     file: UploadFile = File(...),
-    telegram_id: str = Form(...),
+    email: str = Form(None),
+    phone: str = Form(None),
     db: AsyncSession = Depends(get_db)
 ):
     text = await extract_text_from_pdf(file)
     gpt_data = analyze_resume_with_gemini(text)
 
-    profile = await get_user_profile(db, telegram_id)
+    if not email and not phone:
+        raise HTTPException(status_code=400, detail="Нужно передать email или телефон")
+    
+    query = select(UserProfile)
+    if email:
+        query = query.where(UserProfile.email == email)
+    else:
+        query = query.where(UserProfile.phone_number == phone)
+    
+    result = await db.execute(query)
+    profile = result.scalars().first()
+
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
 
     # Всегда обновляем текст резюме
     profile.resume_text = text
 
-    # Список всех полей профиля, которые можно обновлять (кроме id, telegram_id, resume_text)
+    # Список всех полей профиля, которые можно обновлять (кроме id, telegram_id, resume_text, email, phone_number)
     updatable_fields = [
-        "full_name", "gender", "phone_number", "email", "citizenship", "address",
+        "full_name", "gender", "citizenship", "address",
         "education", "experience", "experience_level", "skills", "languages", "interests", "achievements",
         "desired_position", "desired_salary", "desired_city", "desired_format", "desired_work_time", "industries"
     ]
