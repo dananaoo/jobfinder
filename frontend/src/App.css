@@ -101,15 +101,31 @@ body {
   align-items: center;
 }
 
+.header-nav > .login-button, .header-nav > .logout-button {
+  margin-left: 2.5rem;
+  pointer-events: auto;
+}
+
+.header-nav a, .login-button, .logout-button {
+  font-size: 1.08rem;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 0.5em 1.3em;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+  box-sizing: border-box;
+}
+
 .header-nav a {
   color: var(--text-main);
-  font-weight: 600;
-  text-decoration: none;
-  font-size: 1.05rem;
-  padding: 0.6em 0.7rem;
-  border-radius: 8px;
-  transition: background 0.2s, color 0.2s;
-  white-space: nowrap;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin: 0;
 }
 
 .header-nav a:hover {
@@ -117,24 +133,12 @@ body {
   color: var(--primary-blue);
 }
 
-.header-right {
-  display: flex;
-  align-items: center;
-}
-
-.login-button, .logout-button {
-  border: none;
-  border-radius: 12px;
-  padding: 0.6em 1.5em;
-  font-size: 1.05rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
 .login-button {
   background: var(--primary-blue-dark);
   color: #fff;
+  border: none;
+  margin-left: 0;
+  cursor: pointer;
 }
 
 .login-button:hover {
@@ -144,6 +148,9 @@ body {
 .logout-button {
   background: #e57373;
   color: #fff;
+  border: none;
+  margin-left: 1.5rem;
+  cursor: pointer;
 }
 
 .logout-button:hover {

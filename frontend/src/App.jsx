@@ -150,6 +150,10 @@ function UploadResume({ user }) {
   const [success, setSuccess] = useState(null);
   const [profile, setProfile] = useState(null);
 
+  if (!user || !user.id || !user.token) {
+    return <div className="page" style={{textAlign:'center',marginTop:40}}><h2>Please log in to upload your resume.</h2></div>;
+  }
+
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
     setSuccess(null);
@@ -216,6 +220,10 @@ function Recommendations({ user }) {
   const [recs, setRecs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  if (!user || !user.id || !user.token) {
+    return <div className="page" style={{textAlign:'center',marginTop:40}}><h2>Please log in to view recommendations.</h2></div>;
+  }
 
   const fetchRecs = async () => {
     setLoading(true);
@@ -306,14 +314,12 @@ function App() {
             <Link to="/">Home</Link>
             <Link to="/jobs">Vacancies</Link>
             {user && <Link to="/profile">Profile</Link>}
-            {user && <Link to="/upload-resume">Upload Resume</Link>}
-            {user && <Link to="/recommendations">Recommendations</Link>}
-          </div>
-          <div className="header-right">
+            <Link to="/upload-resume">Upload Resume</Link>
+            <Link to="/recommendations">Recommendations</Link>
             {user ? (
-              <button onClick={handleLogout} className="logout-button">Logout</button>
+              <button type="button" onClick={handleLogout} className="logout-button">Logout</button>
             ) : (
-              <button onClick={() => setAuthModalOpen(true)} className="login-button">Login</button>
+              <button type="button" onClick={() => setAuthModalOpen(true)} className="login-button">Login</button>
             )}
           </div>
         </nav>
@@ -327,7 +333,7 @@ function App() {
           <Route path="/recommendations" element={<Recommendations user={user}/>} />
         </Routes>
       </main>
-      {isAuthModalOpen && <AuthModal onClose={() => setAuthModalOpen(false)} onAuthSuccess={handleAuthSuccess} />}
+      <AuthModal open={isAuthModalOpen} onClose={() => setAuthModalOpen(false)} onAuthSuccess={handleAuthSuccess} />
     </Router>
   );
 }
