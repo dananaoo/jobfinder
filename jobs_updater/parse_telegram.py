@@ -77,12 +77,18 @@ async def main():
                             logger.error(f"❌ Gemini parse error: {e}")
                             fields = {}
 
+                        contact_info = fields.get("contact_info")
+                        if contact_info and contact_info.strip():
+                            contact_info_value = contact_info.strip()
+                        else:
+                            contact_info_value = f"https://t.me/{ch}"
+
                         data = {
                             "title": title.strip(),
                             "description": description.strip(),
                             "telegram_message_id": message.id,
                             "channel_name": ch,
-                            "contact_info": f"https://t.me/{ch}/{message.id}",
+                            "contact_info": contact_info_value,
                             "salary": fields.get("salary"),
                             "location": fields.get("location"),
                             "deadline": fields.get("deadline"),

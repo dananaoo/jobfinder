@@ -10,6 +10,7 @@ class JobPost(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
+    industry = Column(String, nullable=True) 
     description = Column(Text, nullable=False)
     contact_info = Column(String, default="telegram")  # откуда получена вакансия
     created_at = Column(DateTime, default=datetime.utcnow)  # когда появилась в канале

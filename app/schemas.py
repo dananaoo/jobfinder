@@ -8,6 +8,7 @@ from typing import Optional, Union
 # =====================
 class JobPostBase(BaseModel):
     title: str
+    industry: Optional[str] = None  # или List[str], если ты используешь список
     description: str
     contact_info: Optional[str] = "telegram"
     created_at: Optional[datetime] = None
