@@ -6,6 +6,7 @@ from telethon import TelegramClient
 from telethon.tl.types import Message
 from dotenv import load_dotenv
 from extract_with_gemini import extract_fields_from_text
+from datetime import datetime
 
 # Настройка логирования
 logging.basicConfig(
@@ -86,6 +87,8 @@ async def main():
                             "location": fields.get("location"),
                             "deadline": fields.get("deadline"),
                             "format": fields.get("format"),
+                            "created_at": message.date.isoformat(),
+                            "parsed_at": datetime.utcnow().isoformat(),
                         }
 
                         post_job(data)
