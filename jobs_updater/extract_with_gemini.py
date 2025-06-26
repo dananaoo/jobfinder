@@ -39,8 +39,9 @@ def extract_fields_from_text(text: str) -> dict:
 - location: строка (город или страна)
 - deadline: строка (дата дедлайна если указана, в формате YYYY-MM-DD)
 - format: строка (онлайн / офлайн / гибрид)
-- work_time: строка (full-time / part-time / internship / freelance)
 - industry: строка (например: IT, маркетинг, финансы)
+- contact_info: строка (ссылка, телефон, @username,  к которому можно ответить по вакансии)
+
 
 Вот текст вакансии:
 {text}

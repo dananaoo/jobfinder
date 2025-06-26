@@ -1,7 +1,13 @@
-import re
+import os
 import json
+import openai
+import re
+from dotenv import load_dotenv
 from fastapi import HTTPException
-import google.generativeai as genai
+
+load_dotenv()
+client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 
 def extract_json_from_response(text: str) -> dict:
     try:
@@ -9,10 +15,10 @@ def extract_json_from_response(text: str) -> dict:
         return json.loads(json_str)
     except Exception as e:
         print("❌ Ошибка JSON:", e)
-        raise HTTPException(status_code=500, detail="Gemini вернул невалидный JSON")
+        raise HTTPException(status_code=500, detail="OpenAI вернул невалидный JSON")
 
 
-def analyze_resume_with_gemini(text: str) -> dict:
+def analyze_resume_with_openai(text: str) -> dict:
     prompt = f"""
 Ты — AI-ассистент, который структурирует резюме для HR-системы. Твоя задача — максимально точно извлечь данные по каждому из следующих полей. Если по какому-то полю нет информации — не включай его в JSON вообще (не пиши 'string', 'null', 'none', '0' и т.п.).
 
@@ -76,8 +82,20 @@ def analyze_resume_with_gemini(text: str) -> dict:
 Резюме:
 {text}
 """
-    model = genai.GenerativeModel("models/gemini-1.5-flash")
-    response = model.generate_content(prompt)
-    raw_text = response.text.strip()
-    print("📥 Ответ от Gemini:", raw_text)
-    return extract_json_from_response(raw_text) 
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "Ты структурируешь резюме в JSON формате строго по заданному шаблону."},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0.2,
+            max_tokens=2000,
+        )
+        raw_text = response.choices[0].message.content
+        print("📥 Ответ от OpenAI:", raw_text)
+        return extract_json_from_response(raw_text)
+    except Exception as e:
+        print("❌ OpenAI API error:", e)
+        raise HTTPException(status_code=500, detail="Ошибка при обращении к OpenAI API")

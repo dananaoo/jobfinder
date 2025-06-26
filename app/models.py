@@ -11,12 +11,15 @@ class JobPost(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
     description = Column(Text, nullable=False)
-    source = Column(String, default="telegram")  # откуда получена вакансия
-    link = Column(String, nullable=True)         # ссылка на оригинал
-    published_at = Column(DateTime, default=datetime.utcnow)  # когда появилась в канале
+    contact_info = Column(String, default="telegram")  # откуда получена вакансия
+    created_at = Column(DateTime, default=datetime.utcnow)  # когда появилась в канале
     salary = Column(Integer, nullable=True)
     location = Column(String, nullable=True)     # для сравнения с desired_city
     deadline = Column(DateTime, nullable=True)   # если указан дедлайн в тексте
+    format = Column(String, nullable=True)
+    parsed_at = Column(DateTime, default=datetime.utcnow)
+    channel_name = Column(String, nullable=True)
+    telegram_message_id = Column(Integer, nullable=True)
 
 
 class UserProfile(Base):
@@ -64,8 +67,17 @@ class User(Base):
     phone = Column(String, unique=True, nullable=True)
     hashed_password = Column(String, nullable=False)
     profile = relationship("UserProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
-    
+    channels = relationship("UserTelegramChannel", backref="user", cascade="all, delete-orphan")
     __table_args__ = (
         UniqueConstraint('email', name='uq_user_email'),
         UniqueConstraint('phone', name='uq_user_phone'),
     )
+    
+
+
+class UserTelegramChannel(Base):
+    __tablename__ = "user_telegram_channels"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    channel_username = Column(String, nullable=False)

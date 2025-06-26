@@ -5,14 +5,9 @@ from typing import List
 from app import schemas, crud
 from app.schemas import JobPostOut, JobPostCreate
 from app.crud import create_or_update_job_post
-from app.db import AsyncSessionLocal
+from app.db import get_db
 
 router = APIRouter()
-
-# 📦 Dependency
-async def get_db() -> AsyncSession:
-    async with AsyncSessionLocal() as session:
-        yield session
 
 # 📌 Вакансии
 @router.post("/jobs", response_model=JobPostOut)

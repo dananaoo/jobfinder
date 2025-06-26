@@ -6,17 +6,41 @@ from typing import Optional, Union
 # =====================
 # 🧾 JOB POST
 # =====================
-class JobPostCreate(BaseModel):
+class JobPostBase(BaseModel):
     title: str
     description: str
-    link: Optional[str] = None
-    source: Optional[str] = "telegram"
-    published_at: Optional[datetime] = None
+    contact_info: Optional[str] = "telegram"
+    created_at: Optional[datetime] = None
     salary: Optional[int] = None
     location: Optional[str] = None
     deadline: Optional[datetime] = None
+    format: Optional[str] = None
+    channel_name: Optional[str] = None
+    telegram_message_id: Optional[int] = None
 
-class JobPostOut(JobPostCreate):
+
+class JobPostCreate(JobPostBase):
+    pass
+
+
+class JobPostOut(JobPostBase):
+    id: int
+    parsed_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# =====================
+# ➕ USER TELEGRAM CHANNEL
+# =====================
+class UserTelegramChannelBase(BaseModel):
+    channel_username: str
+
+class UserTelegramChannelCreate(UserTelegramChannelBase):
+    pass
+
+class UserTelegramChannelOut(UserTelegramChannelBase):
     id: int
 
     class Config:

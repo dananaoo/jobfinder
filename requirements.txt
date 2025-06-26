@@ -13,3 +13,4 @@ passlib[bcrypt]
 python-jose[cryptography]
 uvloop
 httptools
+openai

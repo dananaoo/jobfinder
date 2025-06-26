@@ -165,10 +165,14 @@ function UploadResume({ user }) {
       setError('Please select a PDF file.');
       return;
     }
-    if (!user || !user.id || !user.token) {
-      setError('User not authenticated.');
+    
+    // Получаем пользователя напрямую из localStorage для гарантии
+    const storedUser = JSON.parse(localStorage.getItem('user'));
+    if (!storedUser || !storedUser.id || !storedUser.token) {
+      setError('User not authenticated. Please log in again.');
       return;
     }
+
     setLoading(true);
     setError(null);
     setSuccess(null);
@@ -177,12 +181,13 @@ function UploadResume({ user }) {
       formData.append('file', file);
       
       const headers = {
-        'Authorization': `Bearer ${user.token}`
+        'Authorization': `Bearer ${storedUser.token}` // Используем токен отсюда
       };
 
       const res = await fetch(`${API_URL}/upload_resume`, {
         method: 'POST',
         headers: headers,
+        mode: 'cors',
         body: formData
       });
       if (!res.ok) throw new Error('Failed to upload resume');
@@ -295,6 +300,7 @@ function App() {
     };
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
+    window.location = '/profile';
   };
 
   const handleLogout = () => {

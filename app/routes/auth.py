@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.db import AsyncSessionLocal
+from app.db import get_db
 from app.schemas import UserRegister, UserLogin, UserOut, UserProfileCreate, UserCreate
 from app.crud import create_user, get_user_by_email_or_phone, verify_password, create_user_profile
 from app.models import User
@@ -23,10 +23,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 # --- End JWT Settings ---
 
 router = APIRouter()
-
-async def get_db() -> AsyncSession:
-    async with AsyncSessionLocal() as session:
-        yield session
 
 @router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 async def register(user: UserRegister, db: AsyncSession = Depends(get_db)):

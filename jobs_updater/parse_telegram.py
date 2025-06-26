@@ -18,28 +18,29 @@ load_dotenv()
 
 api_id = int(os.getenv("TG_API_ID"))
 api_hash = os.getenv("TG_API_HASH")
-channels = ["jobforjunior", "remotejobss", "forfrontend", "forallqa", "fordesigner", "forproducts"]
+
+GLOBAL_CHANNELS = ["jobforjunior", "itcom_kz", "juniors_rabota_jobs", "evacuatejobs", "halyk_jumys", "jobkz_1", "remote_kazakhstan","kzdailyjobs","kz_bi_jobs","careercentervacancies"]
 
 client = TelegramClient("tg_session", api_id, api_hash)
 
-FASTAPI_URL = "http://backend:8000/jobs"
+FASTAPI_URL = "http://backend:8000"
 
-def check_backend():
+def get_user_channels():
     try:
-        response = requests.get("http://backend:8000/")
+        response = requests.get(f"{FASTAPI_URL}/api/v1/channels/internal/all")
         if response.status_code == 200:
-            logger.info("✅ Backend is available")
-            return True
+            logger.info(f"✅ Получены каналы пользователей: {response.json()}")
+            return response.json()
         else:
-            logger.error(f"❌ Backend returned status code: {response.status_code}")
-            return False
+            logger.error(f"❌ Ошибка при получении каналов пользователей: {response.status_code}")
+            return []
     except Exception as e:
-        logger.error(f"❌ Cannot connect to backend: {e}")
-        return False
+        logger.error(f"❌ Не удалось получить каналы пользователей: {e}")
+        return []
 
 def post_job(data):
     try:
-        response = requests.post(FASTAPI_URL, json=data)
+        response = requests.post(f"{FASTAPI_URL}/jobs", json=data)
         if response.status_code == 200:
             logger.info(f"✅ Вакансия сохранена: {data['title']}")
         else:
@@ -52,14 +53,14 @@ async def main():
         await client.start()
         logger.info("🔌 Connected to Telegram!")
 
-        if not check_backend():
-            logger.error("❌ Backend is not available, exiting...")
-            return
+        user_channels = get_user_channels()
+        all_channels = list(set(GLOBAL_CHANNELS + user_channels))
+        logger.info(f"📢 Все каналы для парсинга: {all_channels}")
 
-        for ch in channels:
+        for ch in all_channels:
             logger.info(f"\n📡 Чтение из канала: {ch}")
             try:
-                async for message in client.iter_messages(ch, limit=3):
+                async for message in client.iter_messages(ch, limit=10):
                     if isinstance(message, Message) and message.message:
                         lines = message.message.strip().split("\n", 1)
                         title = lines[0][:100] if lines else "No Title"
@@ -70,7 +71,7 @@ async def main():
                         try:
                             fields = extract_fields_from_text(description)
                             logger.info(f"✨ Извлеченные поля: {fields}")
-                            await asyncio.sleep(5)  # ⏱️ защита от лимитов Gemini
+                            await asyncio.sleep(4.2)  # ⏱️ защита от лимитов Gemini
                         except Exception as e:
                             logger.error(f"❌ Gemini parse error: {e}")
                             fields = {}
@@ -78,14 +79,13 @@ async def main():
                         data = {
                             "title": title.strip(),
                             "description": description.strip(),
-                            "source": "telegram",
-                            "link": None,
+                            "telegram_message_id": message.id,
+                            "channel_name": ch,
+                            "contact_info": f"https://t.me/{ch}/{message.id}",
                             "salary": fields.get("salary"),
                             "location": fields.get("location"),
                             "deadline": fields.get("deadline"),
                             "format": fields.get("format"),
-                            "work_time": fields.get("work_time"),
-                            "industry": fields.get("industry"),
                         }
 
                         post_job(data)
@@ -97,5 +97,8 @@ async def main():
     finally:
         await client.disconnect()
         logger.info("👋 Disconnected from Telegram")
+
+if __name__ == "__main__":
+    asyncio.run(main())
 
 

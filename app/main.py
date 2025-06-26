@@ -13,15 +13,18 @@ from dotenv import load_dotenv
 from fastapi import APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.db import AsyncSessionLocal
+from app.db import AsyncSessionLocal, get_db
 from app.models import JobPost, UserProfile, User
 from app import schemas, crud
 from app.schemas import UserProfileCreate, UserProfileOut, JobPostOut
 from app.crud import create_user_profile, get_user_profile, recommend_jobs_for_user, create_or_update_job_post
 from app.utils.pdf import extract_text_from_pdf
-from app.utils.gemini import extract_json_from_response, analyze_resume_with_gemini
+from app.utils.gemini import extract_json_from_response
+from app.utils.gemini import analyze_resume_with_openai as analyze_resume_with_gemini
+
 from app.routes.jobs import router as jobs_router
 from app.routes.auth import router as auth_router, get_current_user
+from app.routes.channels import router as channels_router
 
 
 load_dotenv()
@@ -32,10 +35,11 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 app = FastAPI()
 app.include_router(jobs_router)
 app.include_router(auth_router)
+app.include_router(channels_router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -43,9 +47,9 @@ app.add_middleware(
 
 
 # 📦 Dependency
-async def get_db() -> AsyncSession:
-    async with AsyncSessionLocal() as session:
-        yield session
+# async def get_db() -> AsyncSession:
+#     async with AsyncSessionLocal() as session:
+#         yield session
 
 
 # 🕓 Подождать, пока БД поднимется
@@ -223,7 +227,7 @@ async def clean_old_jobs():
         try:
             async with AsyncSessionLocal() as db:
                 cutoff_date = datetime.utcnow() - timedelta(days=30)
-                await db.execute(delete(JobPost).where(JobPost.published_at < cutoff_date))
+                await db.execute(delete(JobPost).where(JobPost.created_at < cutoff_date))
                 await db.commit()
         except Exception as e:
             print("❌ Ошибка при очистке старых job'ов:", e)
