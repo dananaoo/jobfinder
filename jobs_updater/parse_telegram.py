@@ -6,7 +6,7 @@ from telethon import TelegramClient
 from telethon.tl.types import Message
 from dotenv import load_dotenv
 from extract_with_gemini import extract_fields_from_text
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 # Настройка логирования
 logging.basicConfig(
@@ -20,11 +20,13 @@ load_dotenv()
 api_id = int(os.getenv("TG_API_ID"))
 api_hash = os.getenv("TG_API_HASH")
 
-GLOBAL_CHANNELS = ["jobforjunior", "itcom_kz", "juniors_rabota_jobs", "evacuatejobs", "halyk_jumys", "jobkz_1", "remote_kazakhstan","kzdailyjobs","kz_bi_jobs","careercentervacancies"]
+GLOBAL_CHANNELS = ["jobforjunior", "jobkz_1", "kzdailyjobs", "kz_bi_jobs", "careercentervacancies", "itcom_kz", "juniors_rabota_jobs", "evacuatejobs", "halyk_jumys", "remote_kazakhstan"]
 
 client = TelegramClient("tg_session", api_id, api_hash)
 
 FASTAPI_URL = "http://backend:8000"
+
+FIRST_RUN = os.getenv("FIRST_RUN", "false").lower() == "true"
 
 def get_user_channels():
     try:
@@ -58,10 +60,19 @@ async def main():
         all_channels = list(set(GLOBAL_CHANNELS + user_channels))
         logger.info(f"📢 Все каналы для парсинга: {all_channels}")
 
+        if FIRST_RUN:
+            one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+            logger.info("⏳ Первый запуск: парсим только сообщения за последние 7 дней")
+        else:
+            logger.info("⏰ Обычный запуск: парсим только последние 20 сообщений")
+
         for ch in all_channels:
             logger.info(f"\n📡 Чтение из канала: {ch}")
             try:
-                async for message in client.iter_messages(ch, limit=10):
+                limit = 100 if FIRST_RUN else 20
+                async for message in client.iter_messages(ch, limit=limit):
+                    if FIRST_RUN and message.date < one_week_ago:
+                        continue
                     if isinstance(message, Message) and message.message:
                         lines = message.message.strip().split("\n", 1)
                         title = lines[0][:100] if lines else "No Title"
@@ -77,6 +88,7 @@ async def main():
                             logger.error(f"❌ Gemini parse error: {e}")
                             fields = {}
 
+                        # Логика выбора contact_info
                         contact_info = fields.get("contact_info")
                         if contact_info and contact_info.strip():
                             contact_info_value = contact_info.strip()
@@ -88,13 +100,14 @@ async def main():
                             "description": description.strip(),
                             "telegram_message_id": message.id,
                             "channel_name": ch,
+                            "created_at": message.date.replace(tzinfo=None).isoformat(),
+                            "parsed_at": datetime.utcnow().isoformat(),
                             "contact_info": contact_info_value,
                             "salary": fields.get("salary"),
                             "location": fields.get("location"),
                             "deadline": fields.get("deadline"),
                             "format": fields.get("format"),
-                            "created_at": message.date.isoformat(),
-                            "parsed_at": datetime.utcnow().isoformat(),
+                            "industry": fields.get("industry"),
                         }
 
                         post_job(data)

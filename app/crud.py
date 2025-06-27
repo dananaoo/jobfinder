@@ -1,10 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, or_
 from sqlalchemy.exc import IntegrityError
 from app.models import JobPost, UserProfile, User, UserTelegramChannel
 from app.schemas import JobPostCreate, UserProfileCreate, UserCreate
-from datetime import datetime
+from datetime import datetime, timedelta
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -139,3 +139,26 @@ async def create_user(db: AsyncSession, user: UserCreate):
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
+
+
+# ✅ Поиск вакансий с фильтрацией
+async def search_jobs(db: AsyncSession, salary_min=None, industry=None, title=None, format=None, location=None):
+    stmt = select(JobPost)
+    filters = []
+    if salary_min is not None:
+        filters.append(JobPost.salary >= salary_min)
+    if industry:
+        filters.append(JobPost.industry.ilike(f"%{industry}%"))
+    if title:
+        filters.append(JobPost.title.ilike(f"%{title}%"))
+    if format:
+        filters.append(JobPost.format.ilike(f"%{format}%"))
+    if location:
+        filters.append(JobPost.location.ilike(f"%{location}%"))
+    # Если фильтры не заданы — свежие вакансии за сутки
+    if not filters:
+        one_day_ago = datetime.utcnow() - timedelta(days=1)
+        filters.append(JobPost.created_at >= one_day_ago)
+    stmt = stmt.where(and_(*filters)).order_by(JobPost.created_at.desc())
+    result = await db.execute(stmt)
+    return result.scalars().all()
