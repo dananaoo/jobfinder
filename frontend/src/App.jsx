@@ -192,7 +192,7 @@ function UploadResume({ user }) {
       });
       if (!res.ok) throw new Error('Failed to upload resume');
       const data = await res.json();
-      setSuccess(data.message || 'Resume uploaded and profile updated!');
+      setSuccess(data.message || 'Resume processed and profile updated!');
       setProfile(data.profile);
     } catch (e) {
       setError(e.message);
@@ -207,16 +207,7 @@ function UploadResume({ user }) {
       <input type="file" accept="application/pdf" onChange={handleFileChange} />
       <button onClick={handleUpload} disabled={loading}>{loading ? 'Uploading...' : 'Upload'}</button>
       {error && <div style={{color: '#c94a4a', marginTop: 10}}>{error}</div>}
-      {success && <div style={{color: '#2e7d32', marginTop: 10}}>{success}</div>}
-      {profile && (
-        <div className="job-card">
-          <div className="job-title" style={{fontSize: '1.2rem'}}>{profile.full_name || 'No Name'}</div>
-          <div style={{color: '#888', marginBottom: 8}}>{profile.email}</div>
-          {profile.skills && <div style={{marginBottom: 8}}><b>Skills:</b> {profile.skills}</div>}
-          {profile.experience_level && <div style={{marginBottom: 8}}><b>Experience Level:</b> {profile.experience_level}</div>}
-          {profile.desired_position && <div style={{marginBottom: 8}}><b>Desired Position:</b> {profile.desired_position}</div>}
-        </div>
-      )}
+      {success && <div style={{color: '#2e7d32', marginTop: 10}}>Resume processed and profile updated!</div>}
     </div>
   );
 }

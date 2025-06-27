@@ -35,6 +35,8 @@ function Profile({ user }) {
   const [editSections, setEditSections] = useState({});
   const [formState, setFormState] = useState({});
 
+  const isGuest = !user || !user.token;
+
   const fetchProfile = useCallback(async () => {
     if (!user || !user.token) return;
     setLoading(true);
@@ -154,10 +156,9 @@ function Profile({ user }) {
     }));
   };
 
-  if (!user) return <div className="page" style={{textAlign:'center'}}><h2>Please log in to view your profile.</h2></div>;
   if (loading) return <div className="page"><h2>Loading Profile...</h2></div>;
   if (error) return <div className="page"><h2>Error: {error}</h2></div>;
-  if (!profile) return <div className="page"><h2>Profile not found.</h2></div>;
+  if (!profile && !isGuest) return <div className="page"><h2>Profile not found.</h2></div>;
 
   const sections = [
       { 
@@ -273,16 +274,17 @@ function Profile({ user }) {
 
   return (
     <div className="page">
-      <h2>User Profile: {profile.full_name || user.email}</h2>
-       <div className="profile-accordion">
+      {isGuest && <div style={{textAlign:'center', color:'#c94a4a', marginBottom: 24, fontWeight:600, fontSize:'1.2rem'}}>Please log in to view your profile.</div>}
+      <h2>User Profile{profile && profile.full_name ? `: ${profile.full_name}` : user && user.email ? `: ${user.email}` : ''}</h2>
+      <div className="profile-accordion">
         {sections.map(({ id, title, Component, fields }) => {
           let progressPercent = 0;
           if (fields) {
             const total = fields.length;
-            const filledCount = fields.filter(field => isFilled(profile[field])).length;
+            const filledCount = profile ? fields.filter(field => isFilled(profile[field])).length : 0;
             progressPercent = Math.round((filledCount / total) * 100);
           } else {
-            progressPercent = isFilled(profile[id]) ? 100 : 0;
+            progressPercent = profile && isFilled(profile[id]) ? 100 : 0;
           }
           return (
             <Section
@@ -292,67 +294,69 @@ function Profile({ user }) {
               progressPercent={progressPercent}
               open={openSections[id]}
               isEditing={editSections[id]}
-              onClick={() => handleToggleSection(id)}
-              onEdit={() => handleEdit(id)}
+              onClick={isGuest ? undefined : () => setOpenSections(prev => ({ ...prev, [id]: !prev[id] }))}
+              onEdit={isGuest ? undefined : () => setEditSections(prev => ({ ...prev, [id]: true }))}
             >
-                {editSections[id]
-                    ? (
-                        id === 'personal' ? renderSimpleForm('personal', [
-                            {name: 'full_name', placeholder: 'Full Name'},
-                            {name: 'email', placeholder: 'Email'},
-                            {name: 'phone_number', placeholder: 'Phone'},
-                            {name: 'address', placeholder: 'Address'},
-                            {name: 'citizenship', placeholder: 'Citizenship'},
-                        ]) :
-                        id === 'preferences' ? renderSimpleForm('preferences', [
-                            {name: 'desired_position', placeholder: 'Desired Position'},
-                            {name: 'desired_city', placeholder: 'Desired City'},
-                            {name: 'desired_format', placeholder: 'Work Format'},
-                            {name: 'desired_work_time', placeholder: 'Work Schedule'},
-                            {name: 'industries', placeholder: 'Industries'},
-                        ]) :
-                        id === 'experience' ? renderObjectListForm('experience', [
-                            {name: 'title', placeholder: 'Position'},
-                            {name: 'company', placeholder: 'Company'},
-                            {name: 'start_date', placeholder: 'Start Date'},
-                            {name: 'end_date', placeholder: 'End Date'},
-                        ]) :
-                        id === 'education' ? renderObjectListForm('education', [
-                            {name: 'university', placeholder: 'University'},
-                            {name: 'degree', placeholder: 'Degree'},
-                            {name: 'start_date', placeholder: 'Start Date'},
-                            {name: 'end_date', placeholder: 'End Date'},
-                        ]) :
-                        id === 'languages' ? renderObjectListForm('languages', [
-                            {name: 'language', placeholder: 'Language'},
-                            {name: 'level', placeholder: 'Level'},
-                        ]) :
-                        id === 'skills' ? renderGenericListForm('skills', 'Skill') :
-                        id === 'achievements' ? renderGenericListForm('achievements', 'Achievement') :
-                        null
-                    )
-                    : (
-                        id === 'personal' ? renderSimpleData('personal', [
-                            {name: 'full_name', placeholder: 'Full Name'},
-                            {name: 'email', placeholder: 'Email'},
-                            {name: 'phone_number', placeholder: 'Phone'},
-                            {name: 'address', placeholder: 'Address'},
-                            {name: 'citizenship', placeholder: 'Citizenship'},
-                        ]) :
-                        id === 'preferences' ? renderSimpleData('preferences', [
-                            {name: 'desired_position', placeholder: 'Desired Position'},
-                            {name: 'desired_city', placeholder: 'Desired City'},
-                            {name: 'desired_format', placeholder: 'Work Format'},
-                            {name: 'desired_work_time', placeholder: 'Work Schedule'},
-                            {name: 'industries', placeholder: 'Industries'},
-                        ]) :
-                        (profile[id] ? <Component {...{ [id]: profile[id] }} /> : <span className="not-filled">Not filled</span>)
-                    )
-                }
+              {isGuest ? (
+                <div style={{color:'#aaa',fontStyle:'italic',padding:'12px 0'}}>Log in to view and edit this section.</div>
+              ) : editSections[id]
+                ? (
+                    id === 'personal' ? renderSimpleForm('personal', [
+                        {name: 'full_name', placeholder: 'Full Name'},
+                        {name: 'email', placeholder: 'Email'},
+                        {name: 'phone_number', placeholder: 'Phone'},
+                        {name: 'address', placeholder: 'Address'},
+                        {name: 'citizenship', placeholder: 'Citizenship'},
+                    ]) :
+                    id === 'preferences' ? renderSimpleForm('preferences', [
+                        {name: 'desired_position', placeholder: 'Desired Position'},
+                        {name: 'desired_city', placeholder: 'Desired City'},
+                        {name: 'desired_format', placeholder: 'Work Format'},
+                        {name: 'desired_work_time', placeholder: 'Work Schedule'},
+                        {name: 'industries', placeholder: 'Industries'},
+                    ]) :
+                    id === 'experience' ? renderObjectListForm('experience', [
+                        {name: 'title', placeholder: 'Position'},
+                        {name: 'company', placeholder: 'Company'},
+                        {name: 'start_date', placeholder: 'Start Date'},
+                        {name: 'end_date', placeholder: 'End Date'},
+                    ]) :
+                    id === 'education' ? renderObjectListForm('education', [
+                        {name: 'university', placeholder: 'University'},
+                        {name: 'degree', placeholder: 'Degree'},
+                        {name: 'start_date', placeholder: 'Start Date'},
+                        {name: 'end_date', placeholder: 'End Date'},
+                    ]) :
+                    id === 'languages' ? renderObjectListForm('languages', [
+                        {name: 'language', placeholder: 'Language'},
+                        {name: 'level', placeholder: 'Level'},
+                    ]) :
+                    id === 'skills' ? renderGenericListForm('skills', 'Skill') :
+                    id === 'achievements' ? renderGenericListForm('achievements', 'Achievement') :
+                    null
+                  )
+                : (
+                    id === 'personal' ? renderSimpleData('personal', [
+                        {name: 'full_name', placeholder: 'Full Name'},
+                        {name: 'email', placeholder: 'Email'},
+                        {name: 'phone_number', placeholder: 'Phone'},
+                        {name: 'address', placeholder: 'Address'},
+                        {name: 'citizenship', placeholder: 'Citizenship'},
+                    ]) :
+                    id === 'preferences' ? renderSimpleData('preferences', [
+                        {name: 'desired_position', placeholder: 'Desired Position'},
+                        {name: 'desired_city', placeholder: 'Desired City'},
+                        {name: 'desired_format', placeholder: 'Work Format'},
+                        {name: 'desired_work_time', placeholder: 'Work Schedule'},
+                        {name: 'industries', placeholder: 'Industries'},
+                    ]) :
+                    (profile && profile[id] ? <Component {...{ [id]: profile[id] }} /> : <span className="not-filled">Not filled</span>)
+                  )
+              }
             </Section>
           );
         })}
-       </div>
+      </div>
     </div>
   );
 }
