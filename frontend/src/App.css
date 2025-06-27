@@ -146,7 +146,7 @@ body {
 }
 
 .logout-button {
-  background: #e57373;
+  background: var(--accent-blue);
   color: #fff;
   border: none;
   margin-left: 1.5rem;
@@ -154,7 +154,7 @@ body {
 }
 
 .logout-button:hover {
-  background: #c94a4a;
+  background: #a770efcc;
 }
 /* End of New Header Styles */
 
@@ -265,7 +265,9 @@ input[type="file"] {
 
 .profile-accordion {
   background: transparent;
-  max-width: 600px;
+  max-width: 900px;
+  min-width: 600px;
+  width: 100%;
   margin: 2rem auto 0 auto;
   display: flex;
   flex-direction: column;

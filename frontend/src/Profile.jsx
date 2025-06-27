@@ -275,15 +275,25 @@ function Profile({ user }) {
     <div className="page">
       <h2>User Profile: {profile.full_name || user.email}</h2>
        <div className="profile-accordion">
-        {sections.map(({ id, title, Component, fields }) => (
+        {sections.map(({ id, title, Component, fields }) => {
+          let progressPercent = 0;
+          if (fields) {
+            const total = fields.length;
+            const filledCount = fields.filter(field => isFilled(profile[field])).length;
+            progressPercent = Math.round((filledCount / total) * 100);
+          } else {
+            progressPercent = isFilled(profile[id]) ? 100 : 0;
+          }
+          return (
             <Section
-                key={id}
-                title={title}
-                filled={fields ? fields.some(field => isFilled(profile[field])) : isFilled(profile[id])}
-                open={openSections[id]}
-                isEditing={editSections[id]}
-                onClick={() => handleToggleSection(id)}
-                onEdit={() => handleEdit(id)}
+              key={id}
+              title={title}
+              filled={progressPercent === 100}
+              progressPercent={progressPercent}
+              open={openSections[id]}
+              isEditing={editSections[id]}
+              onClick={() => handleToggleSection(id)}
+              onEdit={() => handleEdit(id)}
             >
                 {editSections[id]
                     ? (
@@ -340,7 +350,8 @@ function Profile({ user }) {
                     )
                 }
             </Section>
-        ))}
+          );
+        })}
        </div>
     </div>
   );

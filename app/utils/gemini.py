@@ -99,3 +99,47 @@ def analyze_resume_with_openai(text: str) -> dict:
     except Exception as e:
         print("❌ OpenAI API error:", e)
         raise HTTPException(status_code=500, detail="Ошибка при обращении к OpenAI API")
+
+import os
+import json
+import openai
+import re
+from dotenv import load_dotenv
+from fastapi import HTTPException
+
+load_dotenv()
+
+openai.api_type = "azure"
+openai.api_key = os.getenv("AZURE_OPENAI_API_KEY")
+openai.api_base = os.getenv("AZURE_OPENAI_ENDPOINT")  # Пример: https://your-resource-name.openai.azure.com/
+openai.api_version = "2023-05-15"  # Или та версия, которую поддерживает твоя подписка
+
+DEPLOYMENT_NAME = os.getenv("AZURE_OPENAI_DEPLOYMENT")  # Например: "gpt35-turbo"
+
+def extract_json_from_response(text: str) -> dict:
+    try:
+        json_str = re.search(r"\{.*\}", text, re.DOTALL).group()
+        return json.loads(json_str)
+    except Exception as e:
+        print("❌ Ошибка JSON:", e)
+        raise HTTPException(status_code=500, detail="OpenAI вернул невалидный JSON")
+
+def analyze_resume_with_openai(text: str) -> dict:
+    prompt = f"""..."""  # Твой длинный промпт оставь без изменений
+
+    try:
+        response = openai.ChatCompletion.create(
+            deployment_id=DEPLOYMENT_NAME,
+            messages=[
+                {"role": "system", "content": "Ты структурируешь резюме в JSON формате строго по заданному шаблону."},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0.2,
+            max_tokens=2000,
+        )
+        raw_text = response['choices'][0]['message']['content']
+        print("📥 Ответ от Azure OpenAI:", raw_text)
+        return extract_json_from_response(raw_text)
+    except Exception as e:
+        print("❌ Azure OpenAI API error:", e)
+        raise HTTPException(status_code=500, detail="Ошибка при обращении к Azure OpenAI API")
