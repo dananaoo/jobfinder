@@ -7,6 +7,7 @@ from telethon.tl.types import Message
 from dotenv import load_dotenv
 from extract_with_gemini import extract_fields_from_text
 from datetime import datetime, timedelta, timezone
+import json
 
 # Настройка логирования
 logging.basicConfig(
@@ -20,7 +21,7 @@ load_dotenv()
 api_id = int(os.getenv("TG_API_ID"))
 api_hash = os.getenv("TG_API_HASH")
 
-GLOBAL_CHANNELS = ["jobforjunior", "jobkz_1", "kzdailyjobs", "kz_bi_jobs", "careercentervacancies", "itcom_kz", "juniors_rabota_jobs", "evacuatejobs", "halyk_jumys", "remote_kazakhstan"]
+GLOBAL_CHANNELS = ["jobforjunior", "jobkz_1", "kzdailyjobs", "kz_bi_jobs", "careercentervacancies", "devs_it", "juniors_rabota_jobs", "evacuatejobs", "halyk_jumys", "remote_kazakhstan"]
 
 client = TelegramClient("tg_session", api_id, api_hash)
 
@@ -75,20 +76,25 @@ async def main():
                         continue
                     if isinstance(message, Message) and message.message:
                         lines = message.message.strip().split("\n", 1)
-                        title = lines[0][:100] if lines else "No Title"
-                        description = lines[1] if len(lines) > 1 else ""
+                        raw_title = lines[0][:100] if lines else "No Title"
+                        raw_description = lines[1] if len(lines) > 1 else ""
 
-                        logger.info(f"📝 Обработка вакансии: {title}")
-
+                        # Сначала извлекаем поля
                         try:
-                            fields = extract_fields_from_text(description)
+                            fields = extract_fields_from_text(raw_description)
                             logger.info(f"✨ Извлеченные поля: {fields}")
+                            if not fields or (not fields.get("title") and not fields.get("description")):
+                                logger.info("🚫 Нет ключевых полей (title/description), не сохраняем.")
+                                continue
                             await asyncio.sleep(4.2)  # ⏱️ защита от лимитов Gemini
                         except Exception as e:
                             logger.error(f"❌ Gemini parse error: {e}")
-                            fields = {}
+                            continue
 
-                        # Логика выбора contact_info
+                        # Затем fallback логика
+                        title = fields.get("title") or raw_title
+                        description = fields.get("description") or raw_description
+
                         contact_info = fields.get("contact_info")
                         if contact_info and contact_info.strip():
                             contact_info_value = contact_info.strip()
@@ -110,6 +116,7 @@ async def main():
                             "industry": fields.get("industry"),
                         }
 
+                        logger.debug(f"📦 Финальные данные для сохранения: {json.dumps(data, ensure_ascii=False, indent=2)}")
                         post_job(data)
             except Exception as e:
                 logger.error(f"❌ Ошибка при чтении канала {ch}: {e}")
@@ -119,6 +126,7 @@ async def main():
     finally:
         await client.disconnect()
         logger.info("👋 Disconnected from Telegram")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

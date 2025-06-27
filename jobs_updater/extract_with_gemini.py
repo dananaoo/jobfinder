@@ -3,7 +3,7 @@ import re
 import json
 import logging
 from dotenv import load_dotenv
-import google.generativeai as genai
+import openai
 
 # Настройка логирования
 logging.basicConfig(
@@ -14,19 +14,23 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-api_key = os.getenv("GEMINI_API_KEY")
-if not api_key:
-    logger.error("❌ GEMINI_API_KEY not found in environment variables")
-    raise ValueError("GEMINI_API_KEY is required")
+client = openai.AzureOpenAI(
+    api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+    api_version="2024-02-15-preview",
+    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
+)
+DEPLOYMENT_NAME = os.getenv("AZURE_OPENAI_DEPLOYMENT")
 
-genai.configure(api_key=api_key)
-
-try:
-    model = genai.GenerativeModel("models/gemini-1.5-flash")
-    logger.info("✅ Gemini model initialized successfully")
-except Exception as e:
-    logger.error(f"❌ Failed to initialize Gemini model: {e}")
-    raise
+def clean_fields(fields: dict) -> dict:
+    bad_values = {"not specified", "n/a", "none", "null", "", "нет", "не указано", "-"}
+    cleaned = {}
+    for k, v in fields.items():
+        if isinstance(v, str) and v.strip().lower() in bad_values:
+            continue
+        if k == "deadline" and v and not re.match(r"^\d{4}-\d{2}-\d{2}$", str(v)):
+            continue
+        cleaned[k] = v
+    return cleaned
 
 def extract_fields_from_text(text: str) -> dict:
     if not text:
@@ -34,43 +38,70 @@ def extract_fields_from_text(text: str) -> dict:
         return {}
 
     prompt = f"""
-Ты — AI ассистент. Проанализируй описание вакансии и извлеки следующие поля, если они есть:
-- salary: целое число (без символов валюты, только число)
-- location: строка (город или страна)
-- deadline: строка (дата дедлайна если указана, в формате YYYY-MM-DD)
-- format: строка (онлайн / офлайн / гибрид)
-- industry: строка (например: IT, маркетинг, финансы)
-- contact_info: строка (ссылка, телефон, @username,  к которому можно ответить по вакансии)
+You are an AI assistant that extracts structured information from job vacancy descriptions for an HR system.
 
+**Instructions:**
+- Отвечай только валидным JSON, без пояснений, markdown и прочего.
+- Extract as many fields as possible from the list below and return them in JSON. If some fields are missing, just omit them.
+- Do not return a field if you cannot find a real value.
+- Do not write placeholder or garbage values ('string', 'none', 'null', '0', 'N/A', 'Not specified', '-', etc.).
+- For deadline, only return if it is a real date in YYYY-MM-DD format.
 
-Вот текст вакансии:
+**Fields to extract (include only if present):**
+- salary: integer (only the number, no currency symbols or words)
+- location: string (city or country)
+- deadline: string (application deadline, in YYYY-MM-DD format if possible)
+- format: string (online / offline / hybrid / remote)
+- industry: string (e.g., IT, marketing, finance)
+- contact_info: string (link, phone, or @username for contacting about the job)
+- title: string (job title, if present)
+- company: string (company name, if present)
+- description: string (full job description, if present)
+
+**Positive Example (vacancy):**
+{{
+  "title": "Backend Developer",
+  "company": "Acme Corp",
+  "salary": 150000,
+  "location": "Moscow, Russia",
+  "format": "online",
+  "industry": "IT",
+  "contact_info": "@acme_hr",
+  "deadline": "2024-07-01",
+  "description": "We are looking for a backend developer..."
+}}
+
+Job description:
 {text}
-
-Верни JSON с этими ключами. Если значения нет — верни null.
 """
 
     try:
-        logger.info("🤖 Sending request to Gemini...")
-        response = model.generate_content(prompt)
-        
-        if not response.text:
-            logger.error("❌ Empty response from Gemini")
-            return {}
-
-        logger.info(f"📥 Raw response from Gemini: {response.text[:200]}...")
-        
-        json_match = re.search(r"\{.*\}", response.text, re.DOTALL)
-        if not json_match:
-            logger.error("❌ No JSON found in Gemini response")
-            return {}
-            
-        json_str = json_match.group()
-        result = json.loads(json_str)
+        logger.info("🤖 Sending request to Azure OpenAI...")
+        response = client.chat.completions.create(
+            model=DEPLOYMENT_NAME,
+            messages=[
+                {"role": "system", "content": "You extract job vacancy information in strict JSON format according to the given template."},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0.2,
+            max_tokens=1200,
+        )
+        raw_text = response.choices[0].message.content.strip()
+        try:
+            result = json.loads(raw_text)
+        except json.JSONDecodeError:
+            # fallback: extract first {...} block
+            json_match = re.search(r"\{.*\}", raw_text, re.DOTALL)
+            if not json_match:
+                logger.error("❌ No JSON found in OpenAI response")
+                return {}
+            json_str = json_match.group()
+            result = json.loads(json_str)
+        result = clean_fields(result)
         logger.info(f"✨ Successfully extracted fields: {result}")
         return result
-        
     except json.JSONDecodeError as e:
-        logger.error(f"❌ Failed to parse JSON from Gemini response: {e}")
+        logger.error(f"❌ Failed to parse JSON from OpenAI response: {e}")
         return {}
     except Exception as e:
         logger.error(f"❌ Unexpected error in extract_fields_from_text: {e}")
