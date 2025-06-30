@@ -51,6 +51,8 @@ services:
     command: npm run dev
     environment:
       - HOST=0.0.0.0
+      - VITE_API_URL=http://161.35.219.159:8000
+
 
 volumes:
   pgdata:

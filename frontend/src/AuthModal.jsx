@@ -10,6 +10,7 @@ export default function AuthModal({ open, onClose, onAuthSuccess }) {
     email: '',
     phone: '',
     password: '',
+    confirmPassword: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -25,6 +26,14 @@ export default function AuthModal({ open, onClose, onAuthSuccess }) {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    
+    // Проверка совпадения паролей при регистрации
+    if (mode === 'register' && form.password !== form.confirmPassword) {
+      setError('Пароли не совпадают');
+      setLoading(false);
+      return;
+    }
+    
     try {
       if (mode === 'login') {
         const res = await fetch(`${API_URL}/login`, {
@@ -87,11 +96,12 @@ export default function AuthModal({ open, onClose, onAuthSuccess }) {
     }}>
       <div style={{
         background: '#fff', borderRadius: 18, boxShadow: '0 4px 32px 0 rgba(59,180,231,0.13)',
-        padding: '32px 28px', minWidth: 340, maxWidth: 380, width: '100%', position: 'relative', color: '#23243a'
+        padding: '28px 32px', minWidth: 420, maxWidth: 480, width: '100%', position: 'relative', color: '#23243a',
+        maxHeight: '90vh', overflowY: 'auto'
       }}>
         <button onClick={onClose} style={{position:'absolute',top:12,right:16,fontSize:22,background:'none',border:'none',cursor:'pointer',color:'#888'}}>×</button>
-        <h2 style={{marginBottom:18, textAlign:'center'}}> {mode === 'login' ? 'Вход' : 'Регистрация'}</h2>
-        <form onSubmit={handleSubmit} style={{display:'flex',flexDirection:'column',gap:14}}>
+        <h2 style={{marginBottom:20, textAlign:'center', marginTop: 8}}> {mode === 'login' ? 'Вход' : 'Регистрация'}</h2>
+        <form onSubmit={handleSubmit} style={{display:'flex',flexDirection:'column',gap:12}}>
           {mode === 'register' && (
             <>
               <label style={labelStyle} htmlFor="first_name">Имя</label>
@@ -104,13 +114,19 @@ export default function AuthModal({ open, onClose, onAuthSuccess }) {
           <input name="email" id="email" type="email" placeholder="Введите email (необязательно)" value={form.email} onChange={handleChange} style={inputStyle} autoComplete="username" />
           <label style={labelStyle} htmlFor="phone">Телефон</label>
           <input name="phone" id="phone" placeholder="Введите телефон (необязательно)" value={form.phone} onChange={handleChange} style={inputStyle} autoComplete="tel" />
-          <div style={{fontSize:'0.97rem',color:'#888',marginTop:-8,marginBottom:2}}>Можно ввести <b>либо email, либо телефон</b></div>
+          <div style={{fontSize:'0.9rem',color:'#888',marginTop:-6,marginBottom:4}}>Можно ввести <b>либо email, либо телефон</b></div>
           <label style={labelStyle} htmlFor="password">Пароль</label>
           <input name="password" id="password" type="password" placeholder="Введите пароль" value={form.password} onChange={handleChange} required style={inputStyle} autoComplete="current-password" />
-          {error && <div style={{color:'#c94a4a',marginTop:2}}>{error}</div>}
-          <button type="submit" disabled={loading} style={{marginTop:8}}>{loading ? 'Загрузка...' : (mode === 'login' ? 'Войти' : 'Зарегистрироваться')}</button>
+          {mode === 'register' && (
+            <>
+              <label style={labelStyle} htmlFor="confirmPassword">Подтвердить пароль</label>
+              <input name="confirmPassword" id="confirmPassword" type="password" placeholder="Введите пароль повторно" value={form.confirmPassword} onChange={handleChange} required style={inputStyle} autoComplete="new-password" />
+            </>
+          )}
+          {error && <div style={{color:'#c94a4a',marginTop:4,fontSize:'0.9rem'}}>{error}</div>}
+          <button type="submit" disabled={loading} style={{marginTop:12,padding:'12px 20px',borderRadius:10,fontSize:'1rem',fontWeight:600}}>{loading ? 'Загрузка...' : (mode === 'login' ? 'Войти' : 'Зарегистрироваться')}</button>
         </form>
-        <div style={{marginTop:18, textAlign:'center', fontSize:'0.98rem'}}>
+        <div style={{marginTop:16, textAlign:'center', fontSize:'0.95rem'}}>
           {mode === 'login' ? (
             <>Нет аккаунта? <span style={{color:'#3bb4e7',cursor:'pointer'}} onClick={()=>setMode('register')}>Зарегистрироваться</span></>
           ) : (
@@ -123,17 +139,17 @@ export default function AuthModal({ open, onClose, onAuthSuccess }) {
 }
 
 const inputStyle = {
-  padding: '10px 14px',
+  padding: '10px 12px',
   borderRadius: 8,
   border: '1.2px solid #e0e0e0',
-  fontSize: '1rem',
+  fontSize: '0.95rem',
   background: '#fafbff',
   color: '#23243a',
 };
 const labelStyle = {
   fontWeight: 500,
   marginBottom: 2,
-  marginTop: 2,
+  marginTop: 1,
   color: '#23243a',
-  fontSize: '1rem',
+  fontSize: '0.95rem',
 }; 
