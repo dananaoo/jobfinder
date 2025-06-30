@@ -54,3 +54,4 @@ migrations/
 # Build
 build/
 dist/
+*.session
