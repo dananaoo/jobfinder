@@ -274,10 +274,13 @@ function Profile({ user }) {
 
   return (
     <div className="page">
-      {isGuest && <div style={{textAlign:'center', color:'#c94a4a', marginBottom: 24, fontWeight:600, fontSize:'1.2rem'}}>Please log in to view your profile.</div>}
-      <h2>User Profile{profile && profile.full_name ? `: ${profile.full_name}` : user && user.email ? `: ${user.email}` : ''}</h2>
-      <div className="profile-accordion">
-        {sections.map(({ id, title, Component, fields }) => {
+      {isGuest ? (
+        <div style={{textAlign:'center', color:'#c94a4a', marginTop: 40, fontWeight:600, fontSize:'1.2rem'}}>Please log in to view your profile.</div>
+      ) : (
+        <>
+          <h2>User Profile{profile && profile.full_name ? `: ${profile.full_name}` : user && user.email ? `: ${user.email}` : ''}</h2>
+          <div className="profile-accordion">
+            {sections.map(({ id, title, Component, fields }) => {
           let progressPercent = 0;
           if (fields) {
             const total = fields.length;
@@ -353,10 +356,12 @@ function Profile({ user }) {
                     (profile && profile[id] ? <Component {...{ [id]: profile[id] }} /> : <span className="not-filled">Not filled</span>)
                   )
               }
-            </Section>
-          );
-        })}
-      </div>
+              </Section>
+            );
+          })}
+          </div>
+        </>
+      )}
     </div>
   );
 }

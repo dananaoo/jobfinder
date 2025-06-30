@@ -80,13 +80,12 @@ function Home() {
           <div className="use-steps-container">
             <div className="use-step">
               <div className="use-step-image-placeholder">
-                {/* Placeholder for login image */}
-                <div className="placeholder-text">Login Image</div>
+                <img src="/login.png" alt="Create Account" className="use-step-image" />
               </div>
               <div className="use-step-content">
                 <h3 className="use-step-title">1. Create Account</h3>
                 <p className="use-step-desc">Sign up to access personalized job recommendations and save your preferences.</p>
-                <button className="use-step-btn" onClick={() => window.location.href='/login'}>
+                <button className="use-step-btn" onClick={() => window.location.href='/register'}>
                   Sign Up Now
                 </button>
               </div>
@@ -101,15 +100,13 @@ function Home() {
                 </button>
               </div>
               <div className="use-step-image-placeholder">
-                {/* Placeholder for resume upload image */}
-                <div className="placeholder-text">Resume Upload Image</div>
+                <img src="/resume.png" alt="Upload Resume" className="use-step-image" />
               </div>
             </div>
 
             <div className="use-step">
               <div className="use-step-image-placeholder">
-                {/* Placeholder for profile image */}
-                <div className="placeholder-text">Profile Image</div>
+                <img src="/profile.png" alt="Complete Profile" className="use-step-image" />
               </div>
               <div className="use-step-content">
                 <h3 className="use-step-title">3. Complete Your Profile</h3>
@@ -129,18 +126,22 @@ function Home() {
                 </button>
               </div>
               <div className="use-step-image-placeholder">
-                {/* Placeholder for recommendations image */}
-                <div className="placeholder-text">Recommendations Image</div>
+                <img src="/recommendation.png" alt="Get Recommendations" className="use-step-image" />
               </div>
             </div>
 
             <div className="use-step-alternative">
-              <div className="alternative-content">
-                <h3 className="alternative-title">Or Browse Jobs Without Registration</h3>
-                <p className="alternative-desc">Not ready to sign up? You can still browse all available vacancies without creating an account.</p>
-                <button className="alternative-btn" onClick={() => window.location.href='/jobs'}>
-                  Browse All Jobs
-                </button>
+              <div className="alternative-content-with-image">
+                <div className="alternative-image">
+                  <img src="/vacancies.png" alt="Browse All Jobs" className="alternative-img" />
+                </div>
+                <div className="alternative-content">
+                  <h3 className="alternative-title">Or Browse Jobs Without Registration</h3>
+                  <p className="alternative-desc">Not ready to sign up? You can still browse all available vacancies without creating an account.</p>
+                  <button className="alternative-btn" onClick={() => window.location.href='/jobs'}>
+                    Browse All Jobs
+                  </button>
+                </div>
               </div>
             </div>
           </div>

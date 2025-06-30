@@ -358,9 +358,8 @@ function Recommendations({ user }) {
 
   return (
     <div className="page">
-      <h2 style={{fontSize: '2.1rem', fontWeight: 700, letterSpacing: 0.2}}>Recommendations</h2>
       {(user && user.id && user.token) && (
-        <div style={{display: 'flex', justifyContent: 'center', marginBottom: '1.5rem', marginTop: '-1rem'}}>
+        <div style={{display: 'flex', justifyContent: 'center', marginBottom: '1.5rem'}}>
           <button 
             onClick={fetchRecs} 
             disabled={loading} 
