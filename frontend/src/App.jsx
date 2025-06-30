@@ -204,10 +204,55 @@ function UploadResume({ user }) {
   return (
     <div className="upload-resume-container">
       <h2>Upload Resume</h2>
-      <input type="file" accept="application/pdf" onChange={handleFileChange} />
-      <button onClick={handleUpload} disabled={loading}>{loading ? 'Uploading...' : 'Upload'}</button>
-      {error && <div style={{color: '#c94a4a', marginTop: 10}}>{error}</div>}
-      {success && <div style={{color: '#2e7d32', marginTop: 10}}>Resume processed and profile updated!</div>}
+      
+      <div className="upload-file-area" onClick={() => document.getElementById('file-input').click()}>
+        <div className="upload-icon">📄</div>
+        <div className="upload-text">
+          {file ? 'File Selected' : 'Choose your resume file'}
+        </div>
+        <div className="upload-subtext">
+          Drag and drop your PDF file here, or click to browse
+        </div>
+        <button className="file-input-button" type="button">
+          {file ? 'Change File' : 'Browse Files'}
+        </button>
+      </div>
+
+      <input 
+        id="file-input"
+        type="file" 
+        accept="application/pdf" 
+        onChange={handleFileChange} 
+      />
+
+      {file && (
+        <div className="selected-file">
+          <span>📄</span>
+          <span className="selected-file-name">{file.name}</span>
+        </div>
+      )}
+
+      {file && (
+        <button 
+          className="upload-button" 
+          onClick={handleUpload} 
+          disabled={loading}
+        >
+          {loading ? 'Uploading...' : 'Upload Resume'}
+        </button>
+      )}
+
+      {error && (
+        <div className="upload-status error">
+          ❌ {error}
+        </div>
+      )}
+      
+      {success && (
+        <div className="upload-status success">
+          ✅ Resume processed and profile updated!
+        </div>
+      )}
     </div>
   );
 }
@@ -313,11 +358,33 @@ function Recommendations({ user }) {
 
   return (
     <div className="page">
-      <h2 style={{marginBottom: 18, fontSize: '2.1rem', fontWeight: 700, letterSpacing: 0.2}}>Recommendations</h2>
+      <h2 style={{fontSize: '2.1rem', fontWeight: 700, letterSpacing: 0.2}}>Recommendations</h2>
+      {(user && user.id && user.token) && (
+        <div style={{display: 'flex', justifyContent: 'center', marginBottom: '1.5rem', marginTop: '-1rem'}}>
+          <button 
+            onClick={fetchRecs} 
+            disabled={loading} 
+            style={{ 
+              background: loading ? '#e0f1fa' : '#a084e8', 
+              color: loading ? '#bbb' : '#fff', 
+              fontWeight: 600, 
+              minWidth: 120, 
+              borderRadius: 12, 
+              fontSize: '1rem', 
+              padding: '0.7em 1.5em', 
+              border: 'none', 
+              cursor: loading ? 'not-allowed' : 'pointer', 
+              transition: 'background 0.2s',
+              margin: 0
+            }}
+          >
+            {loading ? 'Refreshing...' : 'Refresh'}
+          </button>
+        </div>
+      )}
       {(!user || !user.id || !user.token)
         ? <div style={{textAlign:'center',marginTop:40}}><h2>Please log in to view recommendations.</h2></div>
         : <>
-            <button onClick={fetchRecs} disabled={loading} style={{marginBottom: 18}}>{loading ? 'Refreshing...' : 'Refresh'}</button>
             {error && <div style={{color: 'red', marginTop: 10}}>{error}</div>}
             <div className="jobs-list" style={{display:'flex',flexDirection:'column',alignItems:'center',marginTop:24, width:'100%'}}>
               {paginatedJobs.length === 0 && !loading && emptyMessage}

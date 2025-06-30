@@ -97,91 +97,67 @@ function Jobs() {
   const canNext = page < totalPages - 1;
 
   return (
-    <div style={{
-      width: '100%',
+    <div className="page" style={{
+      maxWidth: 1300,
+      margin: '0 auto',
+      padding: '40px 32px',
       display: 'flex',
-      justifyContent: 'center',
-      background: 'transparent',
+      alignItems: 'flex-start',
+      gap: 48,
+      minHeight: 600,
+      boxSizing: 'border-box',
     }}>
-      <div className="page" style={{
-        maxWidth: 1400,
-        width: '100%',
-        margin: '40px auto',
-        background: '#fff',
-        borderRadius: 32,
-        boxShadow: '0 4px 32px 0 rgba(59,180,231,0.07)',
-        padding: '48px 40px',
+      {/* Filters Sidebar */}
+      <form onSubmit={handleApplyFilters} style={{
+        minWidth: 370,
+        maxWidth: 370,
+        width: 370,
+        background: 'rgba(248,250,253,0.97)',
+        borderRadius: 24,
+        padding: 32,
+        boxShadow: '0 2px 16px 0 rgba(59,180,231,0.07)',
         display: 'flex',
-        alignItems: 'flex-start',
-        gap: 48,
-        minHeight: 600,
+        flexDirection: 'column',
+        gap: 18,
+        marginRight: 0,
         boxSizing: 'border-box',
+        minHeight: '520px',
+        alignSelf: 'flex-start',
       }}>
-        {/* Filters Sidebar */}
-        <form onSubmit={handleApplyFilters} style={{
-          minWidth: 370,
-          maxWidth: 370,
-          width: 370,
-          background: 'rgba(248,250,253,0.97)',
-          borderRadius: 24,
-          padding: 32,
-          boxShadow: '0 2px 16px 0 rgba(59,180,231,0.07)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 18,
-          marginRight: 0,
-          boxSizing: 'border-box',
-          minHeight: '520px',
-          alignSelf: 'flex-start',
-        }}>
-          <h3 style={{ marginBottom: 8, color: '#23243a', fontWeight: 700, fontSize: '1.25rem', letterSpacing: 0.2 }}>Filters</h3>
-          <div style={{ marginBottom: 2 }}>
-            <label style={{ fontWeight: 500 }}>Minimum salary:</label>
-            <input type="number" name="salary_min" value={filters.salary_min} onChange={handleFilterChange} style={{ width: '100%', marginTop: 4, borderRadius: 8, border: '1px solid #e0f1fa', padding: '7px 10px', fontSize: '1rem', background: '#fff', color: '#23243a' }} placeholder="e.g. 100000" />
-          </div>
-          <div style={{ marginBottom: 2 }}>
-            <label style={{ fontWeight: 500 }}>Industry:</label>
-            <input type="text" name="industry" value={filters.industry} onChange={handleFilterChange} style={{ width: '100%', marginTop: 4, borderRadius: 8, border: '1px solid #e0f1fa', padding: '7px 10px', fontSize: '1rem', background: '#fff', color: '#23243a' }} placeholder="e.g. IT, Marketing" />
-          </div>
-          <div style={{ marginBottom: 2 }}>
-            <label style={{ fontWeight: 500 }}>Job title:</label>
-            <input type="text" name="title" value={filters.title} onChange={handleFilterChange} style={{ width: '100%', marginTop: 4, borderRadius: 8, border: '1px solid #e0f1fa', padding: '7px 10px', fontSize: '1rem', background: '#fff', color: '#23243a' }} placeholder="e.g. manager" />
-          </div>
-          <div style={{ marginBottom: 2 }}>
-            <label style={{ fontWeight: 500 }}>Format:</label>
-            <select name="format" value={filters.format} onChange={handleFilterChange} style={{ width: '100%', marginTop: 4, borderRadius: 8, border: '1px solid #e0f1fa', padding: '7px 10px', fontSize: '1rem', background: '#fff', color: '#23243a' }}>
-              {formatOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-            </select>
-          </div>
-          <div style={{ marginBottom: 2 }}>
-            <label style={{ fontWeight: 500 }}>Location:</label>
-            <input type="text" name="location" value={filters.location} onChange={handleFilterChange} style={{ width: '100%', marginTop: 4, borderRadius: 8, border: '1px solid #e0f1fa', padding: '7px 10px', fontSize: '1rem', background: '#fff', color: '#23243a' }} placeholder="e.g. Moscow" />
-          </div>
-          <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-            <button type="submit" style={{ flex: 1, background: 'var(--accent-blue)', color: '#fff', fontWeight: 600 }}>Apply</button>
-            <button type="button" onClick={handleResetFilters} style={{ flex: 1, background: '#e0f1fa', color: 'var(--primary-blue-dark)', fontWeight: 600, border: '1px solid #e0f1fa' }}>Reset</button>
-          </div>
-        </form>
-        {/* Jobs List + Pagination */}
-        <div style={{ flex: 1, minWidth: 0, boxSizing: 'border-box' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-            <h2 style={{ color: '#23243a', fontWeight: 800, fontSize: '2rem', margin: 0 }}>Vacancies</h2>
-            <button
-              onClick={() => fetchJobs()}
-              disabled={loading}
-              style={{
-                background: loading ? '#e0f1fa' : '#a084e8',
-                color: loading ? '#bbb' : '#fff',
-                fontWeight: 600,
-                fontSize: '1.1rem',
-                borderRadius: 16,
-                padding: '0.7em 2.2em',
-                border: 'none',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                boxShadow: loading ? 'none' : '0 2px 8px 0 rgba(160,132,232,0.08)',
-                transition: 'background 0.2s, box-shadow 0.2s',
-              }}
-            >{loading ? 'Refreshing...' : 'Refresh'}</button>
+        <h3 style={{ marginBottom: 8, color: '#23243a', fontWeight: 700, fontSize: '1.25rem', letterSpacing: 0.2 }}>Filters</h3>
+        <div style={{ marginBottom: 2 }}>
+          <label style={{ fontWeight: 500 }}>Minimum salary:</label>
+          <input type="number" name="salary_min" value={filters.salary_min} onChange={handleFilterChange} style={{ width: '100%', marginTop: 4, borderRadius: 8, border: '1px solid #e0f1fa', padding: '7px 10px', fontSize: '1rem', background: '#fff', color: '#23243a' }} placeholder="e.g. 100000" />
+        </div>
+        <div style={{ marginBottom: 2 }}>
+          <label style={{ fontWeight: 500 }}>Industry:</label>
+          <input type="text" name="industry" value={filters.industry} onChange={handleFilterChange} style={{ width: '100%', marginTop: 4, borderRadius: 8, border: '1px solid #e0f1fa', padding: '7px 10px', fontSize: '1rem', background: '#fff', color: '#23243a' }} placeholder="e.g. IT, Marketing" />
+        </div>
+        <div style={{ marginBottom: 2 }}>
+          <label style={{ fontWeight: 500 }}>Job title:</label>
+          <input type="text" name="title" value={filters.title} onChange={handleFilterChange} style={{ width: '100%', marginTop: 4, borderRadius: 8, border: '1px solid #e0f1fa', padding: '7px 10px', fontSize: '1rem', background: '#fff', color: '#23243a' }} placeholder="e.g. manager" />
+        </div>
+        <div style={{ marginBottom: 2 }}>
+          <label style={{ fontWeight: 500 }}>Format:</label>
+          <select name="format" value={filters.format} onChange={handleFilterChange} style={{ width: '100%', marginTop: 4, borderRadius: 8, border: '1px solid #e0f1fa', padding: '7px 10px', fontSize: '1rem', background: '#fff', color: '#23243a' }}>
+            {formatOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+          </select>
+        </div>
+        <div style={{ marginBottom: 2 }}>
+          <label style={{ fontWeight: 500 }}>Location:</label>
+          <input type="text" name="location" value={filters.location} onChange={handleFilterChange} style={{ width: '100%', marginTop: 4, borderRadius: 8, border: '1px solid #e0f1fa', padding: '7px 10px', fontSize: '1rem', background: '#fff', color: '#23243a' }} placeholder="e.g. Moscow" />
+        </div>
+        <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+          <button type="submit" style={{ flex: 1, background: 'var(--accent-blue)', color: '#fff', fontWeight: 600 }}>Apply</button>
+          <button type="button" onClick={handleResetFilters} style={{ flex: 1, background: '#e0f1fa', color: 'var(--primary-blue-dark)', fontWeight: 600, border: '1px solid #e0f1fa' }}>Reset</button>
+        </div>
+      </form>
+      {/* Jobs List + Pagination */}
+      <div style={{ flex: 1, minWidth: 0, boxSizing: 'border-box' }}>
+        <div className="main-content">
+          <div className="header-row">
+            <h1 className="vacancies-title">Vacancies</h1>
+            <button onClick={() => fetchJobs()} disabled={loading} style={{ background: loading ? '#e0f1fa' : '#a084e8', color: loading ? '#bbb' : '#fff', fontWeight: 600, minWidth: 120, borderRadius: 12, fontSize: '1rem', padding: '0.7em 1.5em', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', transition: 'background 0.2s' }}>{loading ? 'Refreshing...' : 'Refresh'}</button>
           </div>
           {error && <div style={{ color: '#c94a4a', marginTop: 10 }}>{error}</div>}
           <div className="jobs-list" style={{ marginTop: 0 }}>
