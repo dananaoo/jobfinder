@@ -17,10 +17,11 @@ from app.db import AsyncSessionLocal, get_db
 from app.models import JobPost, UserProfile, User
 from app import schemas, crud
 from app.schemas import UserProfileCreate, UserProfileOut, JobPostOut
-from app.crud import create_user_profile, get_user_profile, recommend_jobs_for_user, create_or_update_job_post
+from app.crud import create_user_profile, get_user_profile, recommend_jobs_for_user, create_or_update_job_post, get_user_profile_by_user_id
 from app.utils.pdf import extract_text_from_pdf
 from app.utils.gemini import extract_json_from_response
 from app.utils.gemini import analyze_resume_with_openai as analyze_resume_with_gemini
+from app.utils.gemini import recommend_jobs_with_openai
 
 from app.routes.jobs import router as jobs_router
 from app.routes.auth import router as auth_router, get_current_user
@@ -174,50 +175,60 @@ async def upload_resume(
 
 # 🎯 Рекомендации
 @app.get("/recommendations", response_model=List[JobPostOut])
-async def recommend_jobs(telegram_id: str = Query(...), db: AsyncSession = Depends(get_db)):
-    profile = await get_user_profile(db, telegram_id)
+async def recommend_jobs(user_id: int = Query(...), db: AsyncSession = Depends(get_db)):
+    profile = await get_user_profile_by_user_id(db, user_id)
     if not profile:
         raise HTTPException(status_code=404, detail="User profile not found")
 
     result = await db.execute(select(JobPost))
     jobs = result.scalars().all()
 
-    user_skills = [s.strip().lower() for s in (profile.skills or "").split(",") if s.strip()]
-    user_industries = [i.strip().lower() for i in (profile.industries or "").split(",") if i.strip()]
-    user_city = (profile.desired_city or "").lower()
-    user_format = (profile.desired_format or "").lower()
-    user_work_time = (profile.desired_work_time or "").lower()
+    # Преобразуем профиль и вакансии в dict для LLM
+    profile_dict = {field: getattr(profile, field) for field in profile.__table__.columns.keys()}
+    jobs_dicts = [
+        {field: getattr(job, field) for field in job.__table__.columns.keys()}
+        for job in jobs
+    ]
 
-    def relevance_score(job: JobPost) -> int:
-        score = 0
-        job_text = f"{job.title} {job.description} {(job.location or '')}".lower()
+    try:
+        llm_recs = recommend_jobs_with_openai(profile_dict, jobs_dicts)
+        # llm_recs: [{"id": <job_id>, "reasons": [..]}]
+        id_to_job = {job.id: job for job in jobs}
+        recommended = []
+        for rec in llm_recs:
+            job = id_to_job.get(rec["id"])
+            if job:
+                job_out = JobPostOut.from_orm(job).dict()
+                job_out["reasons"] = rec.get("reasons", [])
+                recommended.append(job_out)
+        return recommended[:30]
+    except Exception as e:
+        print("❌ LLM recommendations failed, fallback to old logic:", e)
+        # fallback: simple scoring
+        user_skills = [s.strip().lower() for s in (profile.skills or "").split(",") if s.strip()]
+        user_industries = [i.strip().lower() for i in (profile.industries or "").split(",") if i.strip()]
+        user_city = (profile.desired_city or "").lower()
+        user_format = (profile.desired_format or "").lower()
+        user_work_time = (profile.desired_work_time or "").lower()
 
-        # 🎯 Совпадения по индустриям
-        if any(ind in job_text for ind in user_industries):
-            score += 5
+        def relevance_score(job: JobPost) -> int:
+            score = 0
+            job_text = f"{job.title} {job.description} {(job.location or '')}".lower()
+            if any(ind in job_text for ind in user_industries):
+                score += 5
+            score += sum(1 for skill in user_skills if skill in job_text)
+            if user_city and user_city in job_text:
+                score += 1
+            if user_format and user_format in job_text:
+                score += 1
+            if user_work_time and user_work_time in job_text:
+                score += 1
+            return score
 
-        # 🔧 Совпадения по скиллам
-        score += sum(1 for skill in user_skills if skill in job_text)
-
-        # 📍 Город
-        if user_city and user_city in job_text:
-            score += 1
-        # 🧑‍💻 Формат работы
-        if user_format and user_format in job_text:
-            score += 1
-        # ⏱️ Время работы
-        if user_work_time and user_work_time in job_text:
-            score += 1
-
-        return score
-
-    # 💡 Фильтруем только те, где есть хотя бы 1 очко
-    scored_jobs = [(job, relevance_score(job)) for job in jobs]
-    filtered = [job for job, score in scored_jobs if score > 0]
-    sorted_jobs = sorted(filtered, key=lambda x: relevance_score(x), reverse=True)
-
-    return sorted_jobs[:30]
-
+        scored_jobs = [(job, relevance_score(job)) for job in jobs]
+        filtered = [job for job, score in scored_jobs if score > 0]
+        sorted_jobs = sorted(filtered, key=lambda x: relevance_score(x), reverse=True)
+        return sorted_jobs[:30]
 
 
 # 🧹 Очистка устаревших вакансий

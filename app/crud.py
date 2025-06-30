@@ -66,6 +66,14 @@ async def get_user_profile(db: AsyncSession, telegram_id: str):
     return result.scalar_one_or_none()
 
 
+# ✅ Получить профиль по user_id
+async def get_user_profile_by_user_id(db: AsyncSession, user_id: int):
+    result = await db.execute(
+        select(UserProfile).where(UserProfile.user_id == user_id)
+    )
+    return result.scalar_one_or_none()
+
+
 # ✅ Рекомендовать вакансии по профилю
 async def recommend_jobs_for_user(db: AsyncSession, user: UserProfile) -> list[JobPost]:
     stmt = select(JobPost)

@@ -216,19 +216,20 @@ function Recommendations({ user }) {
   const [recs, setRecs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  if (!user || !user.id || !user.token) {
-    return <div className="page" style={{textAlign:'center',marginTop:40}}><h2>Please log in to view recommendations.</h2></div>;
-  }
+  const [openInsight, setOpenInsight] = useState(null);
+  const [page, setPage] = useState(0);
+  const JOBS_PER_PAGE = 5;
 
   const fetchRecs = async () => {
+    if (!user || !user.id || !user.token) return;
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_URL}/recommendations?telegram_id=${TELEGRAM_ID}`);
+      const res = await fetch(`${API_URL}/recommendations?user_id=${user.id}`);
       if (!res.ok) throw new Error('Failed to fetch recommendations');
       const data = await res.json();
       setRecs(data);
+      setPage(0); // Reset to first page on new fetch
     } catch (e) {
       setError(e.message);
     } finally {
@@ -236,34 +237,194 @@ function Recommendations({ user }) {
     }
   };
 
-  useEffect(() => { fetchRecs(); }, []);
+  useEffect(() => {
+    if (user && user.id && user.token) fetchRecs();
+    // eslint-disable-next-line
+  }, [user]);
+
+  // Message for empty recommendations
+  const emptyMessage = (
+    <div style={{
+      background: '#fff6f6',
+      color: '#c94a4a',
+      border: '1.5px solid #e57373',
+      borderRadius: 10,
+      padding: '18px 22px',
+      margin: '32px auto',
+      maxWidth: 520,
+      textAlign: 'center',
+      fontSize: '1.13rem',
+      fontWeight: 500,
+      boxShadow: '0 2px 12px rgba(231,59,59,0.07)'
+    }}>
+      <span role="img" aria-label="info" style={{fontSize:'1.5em',marginRight:8}}>ℹ️</span>
+      Чтобы получить персональные рекомендации, заполните раздел <b>Job Preferences</b> в профиле: желаемая должность, город, формат работы, график, индустрии и навыки. Чем больше информации — тем лучше рекомендации!
+    </div>
+  );
+
+  // Styles for job card and AI insight popover
+  const cardStyle = {
+    background: '#fff',
+    borderRadius: 18,
+    boxShadow: '0 4px 24px rgba(59,180,231,0.10)',
+    border: '1.5px solid #e0f1fa',
+    padding: '1.5rem 2rem',
+    marginBottom: 18,
+    minWidth: '700px',
+    maxWidth: '950px',
+    width: '200%',
+    height: '270px',
+    boxSizing: 'border-box',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    position: 'relative',
+    transition: 'all 0.2s ease-in-out',
+    textAlign: 'left',
+  };
+  const insightBtnStyle = {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '1.5rem',
+    color: '#f9ca24',
+    padding: '0 0 0 0.5rem',
+  };
+  const popoverStyle = {
+    position: 'absolute',
+    top: '4.5rem',
+    right: '2rem',
+    zIndex: 10,
+    background: '#fff9e0',
+    border: '1px solid #f9ca24',
+    borderRadius: 12,
+    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+    padding: '1.2rem 1.5rem',
+    width: '350px',
+    fontSize: '1rem',
+    animation: 'fadeIn 0.2s',
+  };
+
+  // Pagination logic
+  const totalPages = Math.ceil(recs.length / JOBS_PER_PAGE);
+  const paginatedJobs = recs.slice(page * JOBS_PER_PAGE, (page + 1) * JOBS_PER_PAGE);
+  const canPrev = page > 0;
+  const canNext = page < totalPages - 1;
 
   return (
     <div className="page">
-      <h2>Recommendations</h2>
-      <button onClick={fetchRecs} disabled={loading}>{loading ? 'Refreshing...' : 'Refresh'}</button>
-      {error && <div style={{color: 'red', marginTop: 10}}>{error}</div>}
-      <div className="jobs-list">
-        {recs.length === 0 && !loading && <div>No recommendations found.</div>}
-        {recs.map((rec, i) => (
-          <div className="job-card" key={rec.id || i}>
-            <div className="job-title">{rec.title}
-              {rec.location && <span className="job-location">{rec.location}</span>}
+      <h2 style={{marginBottom: 18, fontSize: '2.1rem', fontWeight: 700, letterSpacing: 0.2}}>Recommendations</h2>
+      {(!user || !user.id || !user.token)
+        ? <div style={{textAlign:'center',marginTop:40}}><h2>Please log in to view recommendations.</h2></div>
+        : <>
+            <button onClick={fetchRecs} disabled={loading} style={{marginBottom: 18}}>{loading ? 'Refreshing...' : 'Refresh'}</button>
+            {error && <div style={{color: 'red', marginTop: 10}}>{error}</div>}
+            <div className="jobs-list" style={{display:'flex',flexDirection:'column',alignItems:'center',marginTop:24, width:'100%'}}>
+              {paginatedJobs.length === 0 && !loading && emptyMessage}
+              {paginatedJobs.map((rec, i) => (
+                <div className="job-card" key={rec.id || i} style={cardStyle}>
+                  {/* Header */}
+                  <div style={{ flexShrink: 0, paddingBottom: '0.5rem', width: '100%' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: 8, textAlign: 'left' }}>
+                          {rec.title}
+                          {(rec.format || rec.location) && (
+                            <span style={{ fontWeight: 400, fontSize: '1.08rem', color: '#888', marginLeft: 8 }}>
+                              (
+                              {rec.format ? rec.format : ''}
+                              {rec.format && rec.location ? ', ' : ''}
+                              {rec.location ? rec.location : ''}
+                              )
+                            </span>
+                          )}
+                        </h3>
+                        {rec.reasons && rec.reasons.length > 0 && (
+                          <button style={insightBtnStyle} title="AI Insight" onClick={() => setOpenInsight(openInsight === rec.id ? null : rec.id)}>💡</button>
+                        )}
+                      </div>
+                      {rec.salary && <span style={{ fontSize: '1.1rem', fontWeight: '600', color: '#23243a', textAlign: 'left' }}>Salary: {rec.salary}</span>}
+                    </div>
+                  </div>
+
+                  {/* Body */}
+                  <div className="job-description" style={{ flex: 1, overflowY: 'auto', lineHeight: 1.5, padding: '8px 12px', margin: '0.5rem 0', width: '100%', background: '#f8fafd', borderRadius: 8, fontSize: '1.05rem', color: 'var(--text-main)', textAlign: 'left', height: '80px', maxHeight: '80px' }}>
+                    {rec.description}
+                  </div>
+
+                  {/* Footer */}
+                  <div style={{ flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.5rem', borderTop: '1px solid #f0f0f0', width: '100%' }}>
+                    {/* Contact info as link if URL */}
+                    {rec.contact_info && (/^(https?:\/\/|t\.me\/|tg:)/i.test(rec.contact_info.trim()) ? (
+                      <a
+                        href={rec.contact_info.trim().startsWith('http') ? rec.contact_info.trim() : (rec.contact_info.trim().startsWith('t.me') ? `https://${rec.contact_info.trim()}` : rec.contact_info.trim())}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: '#2e7d32', fontWeight: 500, fontSize: '0.95rem', textDecoration: 'underline', wordBreak: 'break-all' }}
+                      >
+                        {rec.contact_info}
+                      </a>
+                    ) : (
+                      <span style={{ fontWeight: '500', color: '#2e7d32', fontSize: '0.95rem' }}>{rec.contact_info}</span>
+                    ))}
+                    {rec.link && <a className="job-link" href={rec.link} target="_blank" rel="noopener noreferrer">Подробнее</a>}
+                  </div>
+
+                  {/* AI Insight Popover */}
+                  {openInsight === rec.id && rec.reasons && rec.reasons.length > 0 && (
+                    <div style={popoverStyle} onClick={e => e.stopPropagation()}>
+                      <h4 style={{ margin: '0 0 0.5rem 0', fontWeight: '600' }}><span role="img" aria-label="AI">🤖</span> AI Insight</h4>
+                      <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
+                        {rec.reasons.map((r, idx) => <li key={idx} style={{ marginBottom: '0.25rem' }}>{r}</li>)}
+                      </ul>
+                      <button style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'transparent', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }} onClick={() => setOpenInsight(null)}>×</button>
+                    </div>
+                  )}
+                </div>
+              ))}
+              {/* Pagination controls */}
+              {paginatedJobs.length > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 18, marginTop: 32 }}>
+                  <button
+                    onClick={() => setPage(page-1)}
+                    disabled={!canPrev}
+                    style={{
+                      background: canPrev ? '#a084e8' : '#f6f6f6',
+                      color: canPrev ? '#fff' : '#bbb',
+                      fontWeight: 500,
+                      fontSize: '1rem',
+                      border: 'none',
+                      borderRadius: 12,
+                      padding: '0.7em 1.5em',
+                      minWidth: 110,
+                      cursor: canPrev ? 'pointer' : 'not-allowed',
+                      opacity: canPrev ? 1 : 0.7,
+                      transition: 'background 0.2s',
+                    }}
+                  >Previous</button>
+                  <span style={{ fontWeight: 600, color: '#23243a', fontSize: '1rem', minWidth: 40, textAlign: 'center' }}>{page+1}/{totalPages}</span>
+                  <button
+                    onClick={() => setPage(page+1)}
+                    disabled={!canNext}
+                    style={{
+                      background: canNext ? '#a084e8' : '#f6f6f6',
+                      color: canNext ? '#fff' : '#bbb',
+                      fontWeight: 500,
+                      fontSize: '1rem',
+                      border: 'none',
+                      borderRadius: 12,
+                      padding: '0.7em 1.5em',
+                      minWidth: 110,
+                      cursor: canNext ? 'pointer' : 'not-allowed',
+                      opacity: canNext ? 1 : 0.7,
+                      transition: 'background 0.2s',
+                    }}
+                  >Next</button>
+                </div>
+              )}
             </div>
-            {rec.salary && <div className="job-salary">Salary: {rec.salary}</div>}
-            <div className="job-description">{rec.description}</div>
-            {rec.reasons && Array.isArray(rec.reasons) && (
-              <div style={{marginTop:10}}>
-                <b>Why recommended:</b>
-                <ul style={{margin:'6px 0 0 0',paddingLeft:18}}>
-                  {rec.reasons.map((r, idx) => <li key={idx}>{r}</li>)}
-                </ul>
-              </div>
-            )}
-            {rec.link && <a className="job-link" href={rec.link} target="_blank" rel="noopener noreferrer">Подробнее</a>}
-          </div>
-        ))}
-      </div>
+          </>
+      }
     </div>
   );
 }
