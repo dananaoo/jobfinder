@@ -5,8 +5,8 @@ from sqlalchemy import select, delete
 from typing import List
 from datetime import datetime, timedelta
 import os, json, re, time
-from fastapi.staticfiles import StaticFiles
-import pathlib
+# from fastapi.staticfiles import StaticFiles
+# import pathlib
 
 import fitz  # PyMuPDF
 import asyncpg
@@ -247,5 +247,7 @@ async def clean_old_jobs():
         await asyncio.sleep(86400)
 
 
-frontend_dist = pathlib.Path(__file__).parent / "frontend" / "dist"
-app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="static")
+
+
+# Frontend работает отдельно на порту 5173
+# StaticFiles не нужны в микросервисной архитектуре

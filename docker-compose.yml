@@ -3,26 +3,26 @@ version: '3'
 services:
   backend:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     ports:
       - "8000:8000"
     volumes:
-      - .:/code
+      - ./backend:/code
     env_file:
-      - .env
+      - ./backend/.env
     depends_on:
       - db
 
   job_updater:
     build:
-      context: .
+      context: ./backend
       dockerfile: jobs_updater/Dockerfile
     volumes:
-      - .:/code
+      - ./backend:/code
     env_file:
-      - .env
+      - ./backend/.env
     depends_on:
       - db
     command: python jobs_updater/update_jobs.py
@@ -49,9 +49,10 @@ services:
       - ./frontend:/app
       - /app/node_modules
     command: npm run dev
+    env_file:
+      - ./frontend/.env
     environment:
       - HOST=0.0.0.0
-      - VITE_API_URL=http://161.35.219.159:8000
 
 
 volumes:
