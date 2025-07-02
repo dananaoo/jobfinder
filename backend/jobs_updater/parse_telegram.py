@@ -25,7 +25,7 @@ GLOBAL_CHANNELS = ["jobforjunior", "jobkz_1", "kzdailyjobs", "kz_bi_jobs", "care
 
 client = TelegramClient("tg_session", api_id, api_hash)
 
-FASTAPI_URL = "http://backend:8000"
+FASTAPI_URL = os.getenv("FASTAPI_URL", "http://backend:8000")
 
 FIRST_RUN = os.getenv("FIRST_RUN", "false").lower() == "true"
 
