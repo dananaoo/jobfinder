@@ -6,9 +6,10 @@
 
 /* App structure */
 .app-content {
-  padding: 0 2rem;
-  max-width: 1280px;
+  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 0 1rem;
 }
 
 .logo {
@@ -164,11 +165,95 @@ body {
 }
 /* End of New Header Styles */
 
+/* Tablet styles */
 @media (max-width: 900px) {
   .header-nav-container {
     flex-direction: column;
     gap: 0.5rem;
     padding: 1rem 0;
+  }
+  
+  .header-nav {
+    gap: 1rem;
+  }
+  
+  .header-nav > .logout-button {
+    margin-left: 1rem;
+  }
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  .app-header {
+    padding: 0.5rem 1rem;
+    margin: 0 auto 16px auto;
+    border-radius: 12px;
+  }
+  
+  .header-nav-container {
+    min-height: 50px;
+    gap: 0.75rem;
+  }
+  
+  .header-left {
+    gap: 0.5rem;
+  }
+  
+  .logo {
+    height: 35px;
+    width: 35px;
+  }
+  
+  .company-name {
+    font-size: 1.1rem;
+  }
+  
+  .header-nav {
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .header-nav a, .login-button, .logout-button {
+    font-size: 0.95rem;
+    padding: 0.4em 1em;
+    height: 36px;
+    border-radius: 8px;
+  }
+  
+  .header-nav > .login-button, .header-nav > .logout-button {
+    margin-left: 0.5rem;
+  }
+  
+  .header-nav > .logout-button {
+    margin-left: 0.5rem;
+  }
+}
+
+/* Small mobile styles */
+@media (max-width: 480px) {
+  .app-header {
+    padding: 0.5rem 0.75rem;
+    margin: 0 auto 12px auto;
+  }
+  
+  .header-nav-container {
+    min-height: 45px;
+  }
+  
+  .company-name {
+    font-size: 1rem;
+  }
+  
+  .header-nav a, .login-button, .logout-button {
+    font-size: 0.9rem;
+    padding: 0.35em 0.8em;
+    height: 32px;
+  }
+  
+  .logo {
+    height: 30px;
+    width: 30px;
   }
 }
 
@@ -1157,5 +1242,53 @@ input[type="file"] {
 
   .alternative-content {
     text-align: center;
+  }
+}
+
+/* Page responsive styles */
+@media (max-width: 768px) {
+  .page {
+    margin: 16px auto 0 auto;
+    padding: 1.5rem 1rem;
+    border-radius: 20px;
+  }
+  
+  .page > h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    margin: 12px auto 0 auto;
+    padding: 1rem 0.75rem;
+    border-radius: 16px;
+  }
+  
+  .page > h2 {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+  }
+}
+
+/* Global responsive improvements */
+@media (max-width: 768px) {
+  .app-content {
+    padding: 0 0.5rem;
+  }
+  
+  body {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-content {
+    padding: 0 0.25rem;
+  }
+  
+  body {
+    font-size: 13px;
   }
 }
