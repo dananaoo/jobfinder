@@ -303,7 +303,7 @@ function Recommendations({ user }) {
       boxShadow: '0 2px 12px rgba(231,59,59,0.07)'
     }}>
       <span role="img" aria-label="info" style={{fontSize:'1.5em',marginRight:8}}>ℹ️</span>
-      Чтобы получить персональные рекомендации, заполните раздел <b>Job Preferences</b> в профиле: желаемая должность, город, формат работы, график, индустрии и навыки. Чем больше информации — тем лучше рекомендации!
+      To get personalized recommendations, please fill out the <b>Job Preferences</b> section in your profile: desired position, city, work format, schedule, industries and skills. The more information you provide — the better recommendations you'll get!
     </div>
   );
 
@@ -463,7 +463,7 @@ function Recommendations({ user }) {
                         </div>
                       )}
                     </div>
-                    {rec.link && <a className="job-link" href={rec.link} target="_blank" rel="noopener noreferrer">Подробнее</a>}
+                    {rec.link && <a className="job-link" href={rec.link} target="_blank" rel="noopener noreferrer">Details</a>}
                   </div>
 
                   {/* AI Insight Popover */}
