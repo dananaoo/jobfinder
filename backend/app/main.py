@@ -205,32 +205,129 @@ async def recommend_jobs(user_id: int = Query(...), db: AsyncSession = Depends(g
                 recommended.append(job_out)
         return recommended[:30]
     except Exception as e:
-        print("❌ LLM recommendations failed, fallback to old logic:", e)
-        # fallback: simple scoring
-        user_skills = [s.strip().lower() for s in (profile.skills or "").split(",") if s.strip()]
-        user_industries = [i.strip().lower() for i in (profile.industries or "").split(",") if i.strip()]
+        print("❌ LLM recommendations failed, fallback to comprehensive logic:", e)
+        # Comprehensive fallback: analyze full profile like LLM would
+        
+        # Parse all user data with JSON support
+        def parse_field(field_value):
+            """Parse field that might be JSON array or comma-separated string"""
+            if not field_value:
+                return []
+            try:
+                # Try parsing as JSON first
+                import json
+                parsed = json.loads(field_value)
+                if isinstance(parsed, list):
+                    return [str(item).strip().lower() for item in parsed if item]
+                else:
+                    return [str(parsed).strip().lower()]
+            except:
+                # Fallback to comma-separated parsing
+                return [s.strip().lower() for s in str(field_value).split(",") if s.strip()]
+        
+        user_skills = parse_field(profile.skills)
+        user_industries = parse_field(profile.industries)
+        user_position = (profile.desired_position or "").lower()
         user_city = (profile.desired_city or "").lower()
         user_format = (profile.desired_format or "").lower()
         user_work_time = (profile.desired_work_time or "").lower()
+        user_experience_level = (profile.experience_level or "").lower()
+        
+        # Parse experience and education for additional skills/keywords
+        experience_text = (profile.experience or "").lower()
+        education_text = (profile.education or "").lower()
+        achievements_text = (profile.achievements or "").lower()
+        
+        # Extract additional skills from experience/education
+        additional_keywords = []
+        tech_keywords = ['python', 'javascript', 'java', 'react', 'django', 'sql', 'mongodb', 'aws', 'docker', 'kubernetes', 'machine learning', 'data science', 'frontend', 'backend', 'fullstack', 'api', 'rest', 'microservices']
+        for keyword in tech_keywords:
+            if keyword in experience_text or keyword in education_text or keyword in achievements_text:
+                additional_keywords.append(keyword)
 
-        def relevance_score(job: JobPost) -> int:
+        def comprehensive_relevance_score(job: JobPost) -> tuple:
             score = 0
-            job_text = f"{job.title} {job.description} {(job.location or '')}".lower()
-            if any(ind in job_text for ind in user_industries):
-                score += 5
-            score += sum(1 for skill in user_skills if skill in job_text)
-            if user_city and user_city in job_text:
-                score += 1
-            if user_format and user_format in job_text:
-                score += 1
+            matches = []
+            job_title = (job.title or "").lower()
+            job_description = (job.description or "").lower()
+            job_location = (job.location or "").lower()
+            job_format = (job.format or "").lower()
+            job_text = f"{job_title} {job_description}"
+            
+            # 1. EXACT POSITION MATCH (weight: 15) - highest priority
+            if user_position and user_position in job_title:
+                score += 15
+                matches.append(f"Точное совпадение должности: {user_position}")
+            elif user_position and any(word in job_title for word in user_position.split() if len(word) > 2):
+                score += 8
+                matches.append(f"Частичное совпадение должности: {user_position}")
+            
+            # 2. SKILLS FROM PROFILE (weight: 4 per skill)
+            skill_matches = [skill for skill in user_skills if skill in job_text]
+            score += len(skill_matches) * 4
+            if skill_matches:
+                matches.append(f"Навыки из профиля: {', '.join(skill_matches[:4])}")
+            
+            # 3. SKILLS FROM EXPERIENCE (weight: 3 per skill)
+            experience_matches = [kw for kw in additional_keywords if kw in job_text]
+            score += len(experience_matches) * 3
+            if experience_matches:
+                matches.append(f"Навыки из опыта: {', '.join(experience_matches[:3])}")
+            
+            # 4. EXPERIENCE LEVEL MATCH (weight: 6)
+            level_keywords = {
+                'junior': ['junior', 'intern', 'entry', 'начинающий', 'стажер'],
+                'middle': ['middle', 'mid', 'experienced', 'опытный'],
+                'senior': ['senior', 'lead', 'старший', 'ведущий', 'главный']
+            }
+            if user_experience_level:
+                for level, keywords in level_keywords.items():
+                    if user_experience_level in keywords:
+                        if any(kw in job_text for kw in level_keywords[level]):
+                            score += 6
+                            matches.append(f"Уровень опыта: {user_experience_level}")
+                        break
+            
+            # 5. INDUSTRY MATCH (weight: 5)
+            industry_matches = [ind for ind in user_industries if ind in job_text]
+            score += len(industry_matches) * 5
+            if industry_matches:
+                matches.append(f"Индустрия: {', '.join(industry_matches[:2])}")
+            
+            # 6. LOCATION MATCH (weight: 4)
+            if user_city and user_city in job_location:
+                score += 4
+                matches.append(f"Город: {user_city}")
+            
+            # 7. FORMAT MATCH (weight: 3)
+            if user_format and user_format in job_format:
+                score += 3
+                matches.append(f"Формат работы: {user_format}")
+            
+            # 8. WORK TIME MATCH (weight: 2)
             if user_work_time and user_work_time in job_text:
-                score += 1
-            return score
+                score += 2
+                matches.append(f"График работы: {user_work_time}")
+            
+            # 9. BONUS FOR MULTIPLE MATCHES
+            if len(matches) >= 3:
+                score += 2
+                matches.append("Бонус за множественные совпадения")
+                
+            return (score, matches)
 
-        scored_jobs = [(job, relevance_score(job)) for job in jobs]
-        filtered = [job for job, score in scored_jobs if score > 0]
-        sorted_jobs = sorted(filtered, key=lambda x: relevance_score(x), reverse=True)
-        return sorted_jobs[:30]
+        # Score all jobs and sort by relevance
+        job_scores = []
+        for job in jobs:
+            score, matches = comprehensive_relevance_score(job)
+            if score > 0:  # Only include jobs with at least one match
+                job_out = JobPostOut.from_orm(job).dict()
+                job_out["reasons"] = matches
+                job_scores.append((job_out, score))
+        
+        # Sort by score (descending) and return top 30
+        sorted_jobs = sorted(job_scores, key=lambda x: x[1], reverse=True)
+        return [job for job, score in sorted_jobs[:30]]
 
 
 # 🧹 Очистка устаревших вакансий

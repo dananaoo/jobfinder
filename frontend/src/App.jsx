@@ -420,19 +420,49 @@ function Recommendations({ user }) {
 
                   {/* Footer */}
                   <div style={{ flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.5rem', borderTop: '1px solid #f0f0f0', width: '100%' }}>
-                    {/* Contact info as link if URL */}
-                    {rec.contact_info && (/^(https?:\/\/|t\.me\/|tg:)/i.test(rec.contact_info.trim()) ? (
-                      <a
-                        href={rec.contact_info.trim().startsWith('http') ? rec.contact_info.trim() : (rec.contact_info.trim().startsWith('t.me') ? `https://${rec.contact_info.trim()}` : rec.contact_info.trim())}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: '#2e7d32', fontWeight: 500, fontSize: '0.95rem', textDecoration: 'underline', wordBreak: 'break-all' }}
-                      >
-                        {rec.contact_info}
-                      </a>
-                    ) : (
-                      <span style={{ fontWeight: '500', color: '#2e7d32', fontSize: '0.95rem' }}>{rec.contact_info}</span>
-                    ))}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
+                      {/* Channel info */}
+                      {rec.channel_name && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: 500 }}>📢</span>
+                          <a
+                            href={`https://t.me/${rec.channel_name}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ 
+                              color: '#1976d2', 
+                              fontWeight: 500, 
+                              fontSize: '0.9rem', 
+                              textDecoration: 'none',
+                              borderBottom: '1px solid transparent',
+                              transition: 'border-bottom 0.2s'
+                            }}
+                            onMouseEnter={(e) => e.target.style.borderBottom = '1px solid #1976d2'}
+                            onMouseLeave={(e) => e.target.style.borderBottom = '1px solid transparent'}
+                          >
+                            @{rec.channel_name}
+                          </a>
+                        </div>
+                      )}
+                      {/* Contact info */}
+                      {rec.contact_info && rec.contact_info !== `https://t.me/${rec.channel_name}` && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: 500 }}>📞</span>
+                          {(/^(https?:\/\/|t\.me\/|tg:)/i.test(rec.contact_info.trim()) ? (
+                            <a
+                              href={rec.contact_info.trim().startsWith('http') ? rec.contact_info.trim() : (rec.contact_info.trim().startsWith('t.me') ? `https://${rec.contact_info.trim()}` : rec.contact_info.trim())}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ color: '#2e7d32', fontWeight: 500, fontSize: '0.9rem', textDecoration: 'none', wordBreak: 'break-all' }}
+                            >
+                              {rec.contact_info.length > 30 ? `${rec.contact_info.substring(0, 30)}...` : rec.contact_info}
+                            </a>
+                          ) : (
+                            <span style={{ fontWeight: '500', color: '#2e7d32', fontSize: '0.9rem' }}>{rec.contact_info}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     {rec.link && <a className="job-link" href={rec.link} target="_blank" rel="noopener noreferrer">Подробнее</a>}
                   </div>
 

@@ -1553,16 +1553,34 @@ input[type="file"] {
     gap: 8px !important;
   }
   
+  /* Footer content wrapper */
+  .page .job-card > div:last-child > div:first-child {
+    width: 100% !important;
+  }
+  
+  /* Channel and contact info items */
+  .page .job-card > div:last-child > div:first-child > div {
+    flex-wrap: wrap !important;
+  }
+  
+  /* Channel and contact links */
+  .page .job-card > div:last-child > div:first-child a {
+    font-size: 0.85rem !important;
+    max-width: 200px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+  
+  /* Icons smaller */
+  .page .job-card > div:last-child > div:first-child span[style*="📢"],
+  .page .job-card > div:last-child > div:first-child span[style*="📞"] {
+    font-size: 0.8rem !important;
+  }
+  
   .page .job-card .job-link {
     font-size: 0.9rem !important;
     align-self: flex-end !important;
-  }
-  
-  /* Contact info */
-  .page .job-card span[style*="color: #2e7d32"],
-  .page .job-card a[style*="color: #2e7d32"] {
-    font-size: 0.85rem !important;
-    word-break: break-word !important;
   }
 }
 
