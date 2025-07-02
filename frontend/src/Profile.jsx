@@ -19,7 +19,7 @@ const tryParseJSON = (jsonString, fallback = []) => {
     try {
         const result = JSON.parse(jsonString);
         return Array.isArray(result) ? result : [result];
-    } catch (e) {
+    } catch {
         return Array.isArray(fallback) ? fallback : [jsonString];
     }
 };
@@ -64,17 +64,29 @@ function Profile({ user }) {
     fetchProfile();
   }, [fetchProfile]);
   
-  const handleToggleSection = (section) => {
-    setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
-  };
-
   const handleEdit = (section) => {
-    let currentData = profile[section];
+    let currentData;
+    
     if (['experience', 'education', 'languages'].includes(section)) {
-        currentData = currentData ? tryParseJSON(currentData, [{}]) : [{}];
+        // Для объектных списков (работа, образование, языки)
+        currentData = profile[section] ? tryParseJSON(profile[section], [{}]) : [{}];
     } else if (['skills', 'achievements'].includes(section)) {
-        currentData = currentData ? currentData.split(',').map(s => s.trim()) : [''];
+        // Для простых списков (навыки, достижения)
+        if (profile[section]) {
+            try {
+                // Сначала пробуем парсить как JSON (если данные сохранены как массив)
+                const parsed = JSON.parse(profile[section]);
+                currentData = Array.isArray(parsed) ? parsed.filter(Boolean) : [parsed.toString()];
+            } catch {
+                // Если не JSON, то парсим как строку с запятыми
+                currentData = profile[section].split(',').map(s => s.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
+            }
+        } else {
+            currentData = [''];
+        }
+        if (currentData.length === 0) currentData = [''];
     } else {
+        // Для простых форм (personal, preferences)
         currentData = { ...profile };
     }
     
@@ -183,7 +195,7 @@ function Profile({ user }) {
       return (
           <div className="form-container">
               {items.map((item, index) => (
-                  <div key={index} className="form-item">
+                  <div key={index} className="form-item" style={{display: 'flex', alignItems: 'center', marginBottom: '8px'}}>
                       <input
                           value={item}
                           onChange={(e) => {
@@ -192,16 +204,71 @@ function Profile({ user }) {
                               setFormState(prev => ({ ...prev, [section]: newList }));
                           }}
                           placeholder={placeholder}
+                          style={{
+                              padding: '10px 14px',
+                              borderRadius: 8,
+                              border: '1.2px solid #e0e0e0',
+                              fontSize: '1rem',
+                              background: '#fafbff',
+                              color: '#23243a',
+                              flex: 1,
+                              marginRight: '10px'
+                          }}
                       />
-                      <button onClick={() => handleRemoveItem(section, index)} className="remove-btn">✖</button>
+                      <button 
+                          onClick={() => handleRemoveItem(section, index)} 
+                          className="remove-btn"
+                          style={{
+                              background: '#d32f2f',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '4px',
+                              width: '30px',
+                              height: '30px',
+                              cursor: 'pointer'
+                          }}
+                      >✖</button>
                   </div>
               ))}
-              <button onClick={() => handleAddItem(section)}>+ Add</button>
+              <button 
+                  onClick={() => handleAddItem(section)}
+                  style={{
+                      background: '#3a3a3a',
+                      color: 'white',
+                      padding: '10px 20px',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      marginBottom: '16px'
+                  }}
+              >+ Add</button>
               <div className="form-actions">
-                  <button onClick={() => handleSave(section)} disabled={editLoading}>Save</button>
-                  <button onClick={() => handleCancel(section)}>Cancel</button>
+                  <button 
+                      onClick={() => handleSave(section)} 
+                      disabled={editLoading}
+                      style={{
+                          background: '#4caf50',
+                          color: 'white',
+                          padding: '10px 20px',
+                          border: 'none',
+                          borderRadius: '8px',
+                          cursor: editLoading ? 'not-allowed' : 'pointer',
+                          marginRight: '10px'
+                      }}
+                  >Save</button>
+                  <button 
+                      onClick={() => handleCancel(section)}
+                      style={{
+                          background: '#d32f2f',
+                          color: 'white',
+                          padding: '10px 20px',
+                          border: 'none',
+                          borderRadius: '8px',
+                          cursor: 'pointer'
+                      }}
+                  >Cancel</button>
               </div>
-              {editError && <div className="form-error">{editError}</div>}
+              {editError && <div className="form-error" style={{color: '#d32f2f', marginTop: '10px'}}>{editError}</div>}
           </div>
       );
   };
@@ -220,18 +287,61 @@ function Profile({ user }) {
                                 value={item[name] || ''}
                                 onChange={(e) => handleFormListChange(section, index, e)}
                                 placeholder={placeholder}
+                                style={{
+                                    padding: '10px 14px',
+                                    borderRadius: 8,
+                                    border: '1.2px solid #e0e0e0',
+                                    fontSize: '1rem',
+                                    background: '#fafbff',
+                                    color: '#23243a',
+                                    marginBottom: '8px',
+                                    width: '100%'
+                                }}
                             />
                         ))}
                     </div>
                     <button onClick={() => handleRemoveItem(section, index)} className="remove-btn">✖</button>
                 </div>
             ))}
-            <button onClick={() => handleAddItem(section)}>+ Add</button>
+            <button 
+                onClick={() => handleAddItem(section)}
+                style={{
+                    background: '#3a3a3a',
+                    color: 'white',
+                    padding: '10px 20px',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    marginBottom: '16px'
+                }}
+            >+ Add</button>
             <div className="form-actions">
-                <button onClick={() => handleSave(section)} disabled={editLoading}>Save</button>
-                <button onClick={() => handleCancel(section)}>Cancel</button>
+                <button 
+                    onClick={() => handleSave(section)} 
+                    disabled={editLoading}
+                    style={{
+                        background: '#4caf50',
+                        color: 'white',
+                        padding: '10px 20px',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: editLoading ? 'not-allowed' : 'pointer',
+                        marginRight: '10px'
+                    }}
+                >Save</button>
+                <button 
+                    onClick={() => handleCancel(section)}
+                    style={{
+                        background: '#d32f2f',
+                        color: 'white',
+                        padding: '10px 20px',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer'
+                    }}
+                >Cancel</button>
             </div>
-            {editError && <div className="form-error">{editError}</div>}
+            {editError && <div className="form-error" style={{color: '#d32f2f', marginTop: '10px'}}>{editError}</div>}
         </div>
     );
   }
@@ -241,21 +351,52 @@ function Profile({ user }) {
       return (
         <div className="form-container">
              {fields.map(({name, placeholder}) => (
-                <div key={name} className="form-row">
-                    <label>{placeholder}</label>
+                <div key={name} className="form-row" style={{marginBottom: '16px'}}>
+                    <label style={{display: 'block', marginBottom: '4px', fontWeight: '600'}}>{placeholder}</label>
                     <input
                         name={name}
                         value={currentFormState[name] || ''}
                         onChange={(e) => handleSimpleFormChange(section, e)}
                         placeholder={placeholder}
+                        style={{
+                            padding: '10px 14px',
+                            borderRadius: 8,
+                            border: '1.2px solid #e0e0e0',
+                            fontSize: '1rem',
+                            background: '#fafbff',
+                            color: '#23243a',
+                            width: '100%'
+                        }}
                     />
                 </div>
             ))}
             <div className="form-actions">
-                <button onClick={() => handleSave(section)} disabled={editLoading}>Save</button>
-                <button onClick={() => handleCancel(section)}>Cancel</button>
+                <button 
+                    onClick={() => handleSave(section)} 
+                    disabled={editLoading}
+                    style={{
+                        background: '#4caf50',
+                        color: 'white',
+                        padding: '10px 20px',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: editLoading ? 'not-allowed' : 'pointer',
+                        marginRight: '10px'
+                    }}
+                >Save</button>
+                <button 
+                    onClick={() => handleCancel(section)}
+                    style={{
+                        background: '#d32f2f',
+                        color: 'white',
+                        padding: '10px 20px',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer'
+                    }}
+                >Cancel</button>
             </div>
-            {editError && <div className="form-error">{editError}</div>}
+            {editError && <div className="form-error" style={{color: '#d32f2f', marginTop: '10px'}}>{editError}</div>}
         </div>
       );
   }
@@ -298,7 +439,7 @@ function Profile({ user }) {
               open={openSections[id]}
               isEditing={editSections[id]}
               onClick={isGuest ? undefined : () => setOpenSections(prev => ({ ...prev, [id]: !prev[id] }))}
-              onEdit={isGuest ? undefined : () => setEditSections(prev => ({ ...prev, [id]: true }))}
+              onEdit={isGuest ? undefined : () => handleEdit(id)}
             >
               {isGuest ? (
                 <div style={{color:'#aaa',fontStyle:'italic',padding:'12px 0'}}>Log in to view and edit this section.</div>
@@ -353,7 +494,7 @@ function Profile({ user }) {
                         {name: 'desired_work_time', placeholder: 'Work Schedule'},
                         {name: 'industries', placeholder: 'Industries'},
                     ]) :
-                    (profile && profile[id] ? <Component {...{ [id]: profile[id] }} /> : <span className="not-filled">Not filled</span>)
+                    (profile && profile[id] && Component ? <Component {...{ [id]: profile[id] }} /> : <span className="not-filled">Not filled</span>)
                   )
               }
               </Section>
@@ -365,14 +506,5 @@ function Profile({ user }) {
     </div>
   );
 }
-
-const inputStyle = {
-  padding: '10px 14px',
-  borderRadius: 8,
-  border: '1.2px solid #e0e0e0',
-  fontSize: '1rem',
-  background: '#fafbff',
-  color: '#23243a',
-};
 
 export default Profile; 
