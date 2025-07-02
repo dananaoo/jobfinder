@@ -129,6 +129,9 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    if os.getenv("ENV") == "prod":
+        asyncio.run(main())
+    else:
+        print("🛑 Telegram парсинг отключён в dev-среде.")
 
 
