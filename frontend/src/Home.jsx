@@ -1,6 +1,9 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 function Home() {
+  const { t } = useTranslation();
+  
   return (
     <div className="landing">
       {/* Main White Block Container */}
@@ -8,28 +11,27 @@ function Home() {
         {/* Hero Section */}
         <div className="landing-hero">
           <div className="landing-hero-content">
-            <h1 className="landing-title">
-              Find your perfect <span className="landing-title-accent">job</span> without procrastination
+            <h1 className="landing-title" dangerouslySetInnerHTML={{ __html: t('home.hero_title') }}>
             </h1>
             <div className="landing-subtitle">
-              We scan Telegram channels with vacancies to show you only what really fits. No spam. No endless searching.
+              {t('home.hero_subtitle')}
             </div>
             <div className="landing-cta-buttons">
               <button className="landing-cta-primary" onClick={() => window.location.href='/recommendations'}>
-                Get Job Recommendations
+                {t('home.cta_primary')}
               </button>
               <button className="landing-cta-secondary" onClick={() => window.location.href='/jobs'}>
-                Browse All Jobs
+                {t('home.cta_secondary')}
               </button>
             </div>
-            <div className="landing-partners">Free for early users</div>
+            <div className="landing-partners">{t('home.free_text')}</div>
           </div>
           <img className="landing-hero-img" src="/cv-hero.png" alt="LazyJumys Hero" />
         </div>
 
         {/* How It Works Section */}
         <div className="how-it-works-section">
-          <h2 className="section-title">How It Works</h2>
+          <h2 className="section-title">{t('home.how_it_works')}</h2>
           <div className="steps-container">
             <div className="step-card">
               <div className="step-number">1</div>
@@ -54,7 +56,7 @@ function Home() {
 
         {/* Why LazyJumys Section */}
         <div className="why-section">
-          <h2 className="section-title">Why LazyJumys?</h2>
+          <h2 className="section-title">{t('home.why_section')}</h2>
           <div className="landing-features">
             <div className="feature-card">
               <div className="feature-icon">🔄</div>
@@ -76,27 +78,27 @@ function Home() {
 
         {/* How to Use Section */}
         <div className="how-to-use-section">
-          <h2 className="section-title">How to Use LazyJumys</h2>
+          <h2 className="section-title">{t('home.how_to_use')}</h2>
           <div className="use-steps-container">
             <div className="use-step">
               <div className="use-step-image-placeholder">
                 <img src="/login.png" alt="Create Account" className="use-step-image" />
               </div>
               <div className="use-step-content">
-                <h3 className="use-step-title">1. Create Account</h3>
-                <p className="use-step-desc">Sign up to access personalized job recommendations and save your preferences.</p>
+                <h3 className="use-step-title">{t('home.step1_title')}</h3>
+                <p className="use-step-desc">{t('home.step1_desc')}</p>
                 <button className="use-step-btn" onClick={() => window.location.href='/register'}>
-                  Sign Up Now
+                  {t('home.step1_button')}
                 </button>
               </div>
             </div>
 
             <div className="use-step reverse">
               <div className="use-step-content">
-                <h3 className="use-step-title">2. Upload Your Resume</h3>
-                <p className="use-step-desc">Upload your CV and let our AI extract all the important information automatically.</p>
+                <h3 className="use-step-title">{t('home.step2_title')}</h3>
+                <p className="use-step-desc">{t('home.step2_desc')}</p>
                 <button className="use-step-btn" onClick={() => window.location.href='/upload-resume'}>
-                  Upload Resume
+                  {t('home.step2_button')}
                 </button>
               </div>
               <div className="use-step-image-placeholder">
@@ -109,20 +111,20 @@ function Home() {
                 <img src="/profile.png" alt="Complete Profile" className="use-step-image" />
               </div>
               <div className="use-step-content">
-                <h3 className="use-step-title">3. Complete Your Profile</h3>
-                <p className="use-step-desc">Fine-tune your profile with additional skills, experience, and preferences.</p>
+                <h3 className="use-step-title">{t('home.step3_title')}</h3>
+                <p className="use-step-desc">{t('home.step3_desc')}</p>
                 <button className="use-step-btn" onClick={() => window.location.href='/profile'}>
-                  Edit Profile
+                  {t('home.step3_button')}
                 </button>
               </div>
             </div>
 
             <div className="use-step reverse">
               <div className="use-step-content">
-                <h3 className="use-step-title">4. Get Recommendations</h3>
-                <p className="use-step-desc">Receive AI-powered job recommendations tailored specifically to your profile.</p>
+                <h3 className="use-step-title">{t('home.step4_title')}</h3>
+                <p className="use-step-desc">{t('home.step4_desc')}</p>
                 <button className="use-step-btn" onClick={() => window.location.href='/recommendations'}>
-                  View Recommendations
+                  {t('home.step4_button')}
                 </button>
               </div>
               <div className="use-step-image-placeholder">

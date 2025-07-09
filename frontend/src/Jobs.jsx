@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -30,6 +31,7 @@ const formatOptions = [
 const JOBS_PER_PAGE = 5;
 
 function Jobs() {
+  const { t } = useTranslation();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -94,14 +96,14 @@ function Jobs() {
     <div className="page jobs-page-container">
       {/* Page Title - должен быть первым */}
       <div className="jobs-page-header">
-        <h1 className="vacancies-title">Vacancies</h1>
+        <h1 className="vacancies-title">{t('jobs.title')}</h1>
       </div>
 
       {/* Filters Sidebar */}
       <form onSubmit={handleApplyFilters} className="jobs-filters-sidebar">
-        <h3 className="jobs-filters-title">Filters</h3>
+        <h3 className="jobs-filters-title">{t('jobs.filters_title')}</h3>
         <div className="jobs-filter-group">
-          <label className="jobs-filter-label">Minimum salary:</label>
+          <label className="jobs-filter-label">{t('jobs.salary_min')}:</label>
           <input 
             type="number" 
             name="salary_min" 
@@ -112,7 +114,7 @@ function Jobs() {
           />
         </div>
         <div className="jobs-filter-group">
-          <label className="jobs-filter-label">Industry:</label>
+          <label className="jobs-filter-label">{t('jobs.industry')}:</label>
           <input 
             type="text" 
             name="industry" 
@@ -123,7 +125,7 @@ function Jobs() {
           />
         </div>
         <div className="jobs-filter-group">
-          <label className="jobs-filter-label">Job title:</label>
+          <label className="jobs-filter-label">{t('jobs.job_title')}:</label>
           <input 
             type="text" 
             name="title" 
@@ -134,7 +136,7 @@ function Jobs() {
           />
         </div>
         <div className="jobs-filter-group">
-          <label className="jobs-filter-label">Format:</label>
+          <label className="jobs-filter-label">{t('jobs.format')}:</label>
           <select 
             name="format" 
             value={filters.format} 
@@ -145,7 +147,7 @@ function Jobs() {
           </select>
         </div>
         <div className="jobs-filter-group">
-          <label className="jobs-filter-label">Location:</label>
+          <label className="jobs-filter-label">{t('jobs.location')}:</label>
           <input 
             type="text" 
             name="location" 
@@ -156,8 +158,8 @@ function Jobs() {
           />
         </div>
         <div className="jobs-filter-buttons">
-          <button type="submit" className="jobs-filter-button jobs-filter-apply">Apply</button>
-          <button type="button" onClick={handleResetFilters} className="jobs-filter-button jobs-filter-reset">Reset</button>
+          <button type="submit" className="jobs-filter-button jobs-filter-apply">{t('jobs.filter_apply')}</button>
+          <button type="button" onClick={handleResetFilters} className="jobs-filter-button jobs-filter-reset">{t('jobs.filter_reset')}</button>
         </div>
       </form>
 
@@ -165,7 +167,7 @@ function Jobs() {
       <div className="jobs-main-content">
         <div className="main-content">
           <div className="header-row">
-            <h1 className="vacancies-title desktop-only">Vacancies</h1>
+            <h1 className="vacancies-title desktop-only">{t('jobs.title')}</h1>
             <button 
               onClick={() => fetchJobs()} 
               disabled={loading} 
@@ -176,12 +178,12 @@ function Jobs() {
                 cursor: loading ? 'not-allowed' : 'pointer'
               }}
             >
-              {loading ? 'Refreshing...' : 'Refresh'}
+              {loading ? t('jobs.loading') : t('common.refresh')}
             </button>
           </div>
           {error && <div style={{ color: '#c94a4a', marginTop: 10 }}>{error}</div>}
           <div className="jobs-list" style={{ marginTop: 0 }}>
-            {paginatedJobs.length === 0 && !loading && <div style={{ color: '#888', fontSize: '1.1rem', marginTop: 40 }}>No jobs found.</div>}
+            {paginatedJobs.length === 0 && !loading && <div style={{ color: '#888', fontSize: '1.1rem', marginTop: 40 }}>{t('jobs.no_jobs')}</div>}
             {paginatedJobs.map(job => (
               <div className="job-card" key={job.id}>
                 <div className="job-title">

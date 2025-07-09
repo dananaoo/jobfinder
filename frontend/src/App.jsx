@@ -1,33 +1,21 @@
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import './App.css';
 import Home from './Home.jsx';
 import Jobs from './Jobs.jsx';
 import Profile from './Profile.jsx';
 import AuthModal from './AuthModal.jsx';
+import LanguageSwitcher from './components/LanguageSwitcher';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const TELEGRAM_ID = '1';
-
-function formatDate(dateStr) {
-  if (!dateStr) return '';
-  const d = new Date(dateStr);
-  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
-}
 
 function isFilled(val) {
   if (!val) return false;
   if (typeof val === 'string') return val.trim() && val.trim().toLowerCase() !== 'string';
   if (Array.isArray(val)) return val.length > 0;
   return true;
-}
-
-function tryParseJSON(val) {
-  try {
-    return typeof val === 'string' ? JSON.parse(val) : val;
-  } catch {
-    return val;
-  }
 }
 
 function Section({ title, filled, children, open, onClick, icon }) {
@@ -148,12 +136,12 @@ function UploadResume({ user, onSessionExpired }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  const [profile, setProfile] = useState(null);
+  const { t } = useTranslation();
 
 
 
   if (!user || !user.id || !user.token) {
-    return <div className="page" style={{textAlign:'center',marginTop:40}}><h2>Please log in to upload your resume.</h2></div>;
+    return <div className="page" style={{textAlign:'center',marginTop:40}}><h2>{t('upload.login_required')}</h2></div>;
   }
 
   const handleFileChange = (e) => {
@@ -164,14 +152,14 @@ function UploadResume({ user, onSessionExpired }) {
 
   const handleUpload = async () => {
     if (!file) {
-      setError('Please select a PDF file.');
+      setError(t('upload.error_no_file'));
       return;
     }
     
     // Получаем пользователя напрямую из localStorage для гарантии
     const storedUser = JSON.parse(localStorage.getItem('user'));
     if (!storedUser || !storedUser.id || !storedUser.token) {
-      setError('User not authenticated. Please log in again.');
+      setError(t('upload.error_auth'));
       return;
     }
 
@@ -203,8 +191,7 @@ function UploadResume({ user, onSessionExpired }) {
         throw new Error('Failed to upload resume');
       }
       const data = await res.json();
-      setSuccess(data.message || 'Resume processed and profile updated!');
-      setProfile(data.profile);
+      setSuccess(data.message || t('upload.success'));
     } catch (e) {
       setError(e.message);
     } finally {
@@ -214,18 +201,18 @@ function UploadResume({ user, onSessionExpired }) {
 
   return (
     <div className="upload-resume-container">
-      <h2>Upload Resume</h2>
+      <h2>{t('upload.title')}</h2>
       
       <div className="upload-file-area" onClick={() => document.getElementById('file-input').click()}>
         <div className="upload-icon">📄</div>
         <div className="upload-text">
-          {file ? 'File Selected' : 'Choose your resume file'}
+          {file ? t('upload.file_selected') : t('upload.choose_file')}
         </div>
         <div className="upload-subtext">
-          Drag and drop your PDF file here, or click to browse
+          {t('upload.drag_drop')}
         </div>
         <button className="file-input-button" type="button">
-          {file ? 'Change File' : 'Browse Files'}
+          {file ? t('upload.change_file') : t('upload.browse_files')}
         </button>
       </div>
 
@@ -249,7 +236,7 @@ function UploadResume({ user, onSessionExpired }) {
           onClick={handleUpload} 
           disabled={loading}
         >
-          {loading ? 'Uploading...' : 'Upload Resume'}
+          {loading ? t('upload.uploading') : t('upload.upload_button')}
         </button>
       )}
 
@@ -261,7 +248,7 @@ function UploadResume({ user, onSessionExpired }) {
       
       {success && (
         <div className="upload-status success">
-          ✅ Resume processed and profile updated!
+          ✅ {success}
         </div>
       )}
     </div>
@@ -269,6 +256,7 @@ function UploadResume({ user, onSessionExpired }) {
 }
 
 function Recommendations({ user, onSessionExpired }) {
+  const { t } = useTranslation();
   const [recs, setRecs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -359,83 +347,88 @@ function Recommendations({ user, onSessionExpired }) {
   const getEmptyMessage = () => {
     if (profileLoading) {
       return (
-        <div style={{
+        <div className="recommendations-message" style={{
           background: '#f8fafd',
           color: '#666',
           border: '1.5px solid #e0e0e0',
-          borderRadius: 10,
-          padding: '18px 22px',
-          margin: '32px auto',
-          maxWidth: 520,
+          borderRadius: 16,
+          padding: '24px 28px',
+          margin: '40px auto',
+          maxWidth: 580,
           textAlign: 'center',
-          fontSize: '1.13rem',
+          fontSize: '1.1rem',
           fontWeight: 500,
+          lineHeight: 1.5,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.05)'
         }}>
-          <span role="img" aria-label="loading" style={{fontSize:'1.5em',marginRight:8}}>⏳</span>
-          Checking your profile...
+          <span role="img" aria-label="loading" style={{fontSize:'1.8em',marginRight:12,display:'block',marginBottom:8}}>⏳</span>
+          {t('recommendations.checking_profile')}
         </div>
       );
     }
 
     if (!hasAnyProfileData) {
       return (
-        <div style={{
+        <div className="recommendations-message" style={{
           background: '#fff6f6',
           color: '#c94a4a',
           border: '1.5px solid #e57373',
-          borderRadius: 10,
-          padding: '18px 22px',
-          margin: '32px auto',
-          maxWidth: 520,
+          borderRadius: 16,
+          padding: '24px 28px',
+          margin: '40px auto',
+          maxWidth: 580,
           textAlign: 'center',
-          fontSize: '1.13rem',
+          fontSize: '1.1rem',
           fontWeight: 500,
-          boxShadow: '0 2px 12px rgba(231,59,59,0.07)'
+          lineHeight: 1.6,
+          boxShadow: '0 4px 20px rgba(231,59,59,0.08)'
         }}>
-          <span role="img" aria-label="info" style={{fontSize:'1.5em',marginRight:8}}>ℹ️</span>
-          To get personalized recommendations, please fill out your <b>Profile</b> first. Start with basic information and job preferences: desired position, city, work format, schedule, industries and skills.
+          <span role="img" aria-label="info" style={{fontSize:'1.8em',marginRight:12,display:'block',marginBottom:8}}>ℹ️</span>
+          <div dangerouslySetInnerHTML={{ __html: t('recommendations.no_profile') }} />
         </div>
       );
     }
 
     if (!hasJobPreferences) {
       return (
-        <div style={{
+        <div className="recommendations-message" style={{
           background: '#fff8e1',
           color: '#f57f17',
           border: '1.5px solid #ffb74d',
-          borderRadius: 10,
-          padding: '18px 22px',
-          margin: '32px auto',
-          maxWidth: 520,
+          borderRadius: 16,
+          padding: '24px 28px',
+          margin: '40px auto',
+          maxWidth: 580,
           textAlign: 'center',
-          fontSize: '1.13rem',
+          fontSize: '1.1rem',
           fontWeight: 500,
-          boxShadow: '0 2px 12px rgba(245,127,23,0.07)'
+          lineHeight: 1.6,
+          boxShadow: '0 4px 20px rgba(245,127,23,0.08)'
         }}>
-          <span role="img" aria-label="warning" style={{fontSize:'1.5em',marginRight:8}}>⚠️</span>
-          Great start! To get better recommendations, please fill out the <b>Job Preferences</b> section: desired position, city, work format, schedule, and industries.
+          <span role="img" aria-label="warning" style={{fontSize:'1.8em',marginRight:12,display:'block',marginBottom:8}}>⚠️</span>
+          <div dangerouslySetInnerHTML={{ __html: t('recommendations.incomplete_preferences') }} />
         </div>
       );
     }
 
     // Has profile data and job preferences, but no recommendations
     return (
-      <div style={{
+      <div className="recommendations-message" style={{
         background: '#e8f5e8',
         color: '#2e7d32',
         border: '1.5px solid #4caf50',
-        borderRadius: 10,
-        padding: '18px 22px',
-        margin: '32px auto',
-        maxWidth: 520,
+        borderRadius: 16,
+        padding: '24px 28px',
+        margin: '40px auto',
+        maxWidth: 580,
         textAlign: 'center',
-        fontSize: '1.13rem',
+        fontSize: '1.1rem',
         fontWeight: 500,
-        boxShadow: '0 2px 12px rgba(76,175,80,0.07)'
+        lineHeight: 1.6,
+        boxShadow: '0 4px 20px rgba(76,175,80,0.08)'
       }}>
-        <span role="img" aria-label="search" style={{fontSize:'1.5em',marginRight:8}}>🔍</span>
-        Your profile looks great! We're actively searching for job recommendations that match your preferences. Check back soon or try refreshing.
+        <span role="img" aria-label="search" style={{fontSize:'1.8em',marginRight:12,display:'block',marginBottom:8}}>🔍</span>
+        {t('recommendations.searching')}
       </div>
     );
   };
@@ -492,30 +485,33 @@ function Recommendations({ user, onSessionExpired }) {
   return (
     <div className="page">
       {(user && user.id && user.token) && (
-        <div style={{display: 'flex', justifyContent: 'center', marginBottom: '1.5rem'}}>
+        <div style={{display: 'flex', justifyContent: 'center', marginBottom: '2rem'}}>
           <button 
             onClick={fetchRecs} 
             disabled={loading} 
+            className="recommendations-refresh-btn"
             style={{ 
-              background: loading ? '#e0f1fa' : '#a084e8', 
+              background: loading ? '#e0f1fa' : 'linear-gradient(135deg, #a084e8 0%, #8b5cf6 100%)', 
               color: loading ? '#bbb' : '#fff', 
               fontWeight: 600, 
-              minWidth: 120, 
-              borderRadius: 12, 
+              minWidth: 140, 
+              borderRadius: 14, 
               fontSize: '1rem', 
-              padding: '0.7em 1.5em', 
+              padding: '0.8em 2em', 
               border: 'none', 
               cursor: loading ? 'not-allowed' : 'pointer', 
-              transition: 'background 0.2s',
-              margin: 0
+              transition: 'all 0.3s ease',
+              margin: 0,
+              boxShadow: loading ? 'none' : '0 4px 16px rgba(160, 132, 232, 0.3)',
+              transform: loading ? 'none' : 'translateY(0)'
             }}
           >
-            {loading ? 'Refreshing...' : 'Refresh'}
+            {loading ? t('recommendations.refreshing') : t('common.refresh')}
           </button>
         </div>
       )}
       {(!user || !user.id || !user.token)
-        ? <div style={{textAlign:'center',marginTop:40}}><h2>Please log in to view recommendations.</h2></div>
+        ? <div style={{textAlign:'center',marginTop:40,padding:'2rem',background:'#fff',borderRadius:16,boxShadow:'0 4px 20px rgba(0,0,0,0.05)'}}><h2 style={{fontSize:'1.4rem',color:'#666',fontWeight:500,lineHeight:1.5}}>{t('recommendations.login_required')}</h2></div>
         : <>
             {error && <div style={{color: 'red', marginTop: 10}}>{error}</div>}
             <div className="jobs-list" style={{display:'flex',flexDirection:'column',alignItems:'center',marginTop:24, width:'100%'}}>
@@ -539,10 +535,10 @@ function Recommendations({ user, onSessionExpired }) {
                           )}
                         </h3>
                         {rec.reasons && rec.reasons.length > 0 && (
-                          <button style={insightBtnStyle} title="AI Insight" onClick={() => setOpenInsight(openInsight === rec.id ? null : rec.id)}>💡</button>
+                          <button style={insightBtnStyle} title={t('recommendations.ai_insight')} onClick={() => setOpenInsight(openInsight === rec.id ? null : rec.id)}>💡</button>
                         )}
                       </div>
-                      {rec.salary && <span style={{ fontSize: '1.1rem', fontWeight: '600', color: '#23243a', textAlign: 'left' }}>Salary: {rec.salary}</span>}
+                      {rec.salary && <span style={{ fontSize: '1.1rem', fontWeight: '600', color: '#23243a', textAlign: 'left' }}>{t('recommendations.salary')}: {rec.salary}</span>}
                     </div>
                   </div>
 
@@ -596,13 +592,13 @@ function Recommendations({ user, onSessionExpired }) {
                         </div>
                       )}
                     </div>
-                    {rec.link && <a className="job-link" href={rec.link} target="_blank" rel="noopener noreferrer">Details</a>}
+                    {rec.link && <a className="job-link" href={rec.link} target="_blank" rel="noopener noreferrer">{t('recommendations.details')}</a>}
                   </div>
 
                   {/* AI Insight Popover */}
                   {openInsight === rec.id && rec.reasons && rec.reasons.length > 0 && (
                     <div style={popoverStyle} onClick={e => e.stopPropagation()}>
-                      <h4 style={{ margin: '0 0 0.5rem 0', fontWeight: '600' }}><span role="img" aria-label="AI">🤖</span> AI Insight</h4>
+                      <h4 style={{ margin: '0 0 0.5rem 0', fontWeight: '600' }}><span role="img" aria-label="AI">🤖</span> {t('recommendations.ai_insight')}</h4>
                       <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
                         {rec.reasons.map((r, idx) => <li key={idx} style={{ marginBottom: '0.25rem' }}>{r}</li>)}
                       </ul>
@@ -630,7 +626,7 @@ function Recommendations({ user, onSessionExpired }) {
                       opacity: canPrev ? 1 : 0.7,
                       transition: 'background 0.2s',
                     }}
-                  >Previous</button>
+                  >{t('common.previous')}</button>
                   <span style={{ fontWeight: 600, color: '#23243a', fontSize: '1rem', minWidth: 40, textAlign: 'center' }}>{page+1}/{totalPages}</span>
                   <button
                     onClick={() => setPage(page+1)}
@@ -648,7 +644,7 @@ function Recommendations({ user, onSessionExpired }) {
                       opacity: canNext ? 1 : 0.7,
                       transition: 'background 0.2s',
                     }}
-                  >Next</button>
+                  >{t('common.next')}</button>
                 </div>
               )}
             </div>
@@ -663,6 +659,7 @@ function AppContent() {
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
   const [redirectAfterAuth, setRedirectAfterAuth] = useState(null);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     try {
@@ -718,15 +715,16 @@ function AppContent() {
             
           </div>
           <div className="header-nav">
-            <Link to="/">Home</Link>
-            <Link to="/jobs">Vacancies</Link>
-            {user && <Link to="/profile">Profile</Link>}
-            <Link to="/upload-resume">Upload Resume</Link>
-            <Link to="/recommendations">Recommendations</Link>
+            <Link to="/">{t('header.home')}</Link>
+            <Link to="/jobs">{t('header.vacancies')}</Link>
+            {user && <Link to="/profile">{t('header.profile')}</Link>}
+            <Link to="/upload-resume">{t('header.upload_resume')}</Link>
+            <Link to="/recommendations">{t('header.recommendations')}</Link>
+            <LanguageSwitcher />
             {user ? (
-              <button type="button" onClick={handleLogout} className="logout-button">Logout</button>
+              <button type="button" onClick={handleLogout} className="logout-button">{t('header.logout')}</button>
             ) : (
-              <button type="button" onClick={() => setAuthModalOpen(true)} className="login-button">Login</button>
+              <button type="button" onClick={() => setAuthModalOpen(true)} className="login-button">{t('header.login')}</button>
             )}
           </div>
         </nav>
