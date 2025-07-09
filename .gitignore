@@ -62,3 +62,5 @@ node_modules/
 # Frontend build
 frontend/node_modules/
 frontend/dist/
+backend/*.session
+backend/job_updater/*.session
