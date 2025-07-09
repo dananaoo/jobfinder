@@ -563,6 +563,7 @@ function App() {
           <div className="header-left">
             <img src="/final-logo.png" alt="LazyJumys Logo" className="logo" />
             <span className="company-name">LazyJumys</span>
+            
           </div>
           <div className="header-nav">
             <Link to="/">Home</Link>

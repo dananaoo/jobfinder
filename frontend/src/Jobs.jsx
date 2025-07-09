@@ -2,12 +2,6 @@ import React, { useState, useEffect } from 'react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-function formatDate(dateStr) {
-  if (!dateStr) return '';
-  const d = new Date(dateStr);
-  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
-}
-
 function formatRelativeDate(dateStr) {
   if (!dateStr) return '';
   const now = new Date();
@@ -97,89 +91,116 @@ function Jobs() {
   const canNext = page < totalPages - 1;
 
   return (
-    <div className="page" style={{
-      maxWidth: 1300,
-      margin: '0 auto',
-      padding: '40px 32px',
-      display: 'flex',
-      alignItems: 'flex-start',
-      gap: 48,
-      minHeight: 600,
-      boxSizing: 'border-box',
-    }}>
+    <div className="page jobs-page-container">
+      {/* Page Title - должен быть первым */}
+      <div className="jobs-page-header">
+        <h1 className="vacancies-title">Vacancies</h1>
+      </div>
+
       {/* Filters Sidebar */}
-      <form onSubmit={handleApplyFilters} style={{
-        minWidth: 370,
-        maxWidth: 370,
-        width: 370,
-        background: 'rgba(248,250,253,0.97)',
-        borderRadius: 24,
-        padding: 32,
-        boxShadow: '0 2px 16px 0 rgba(59,180,231,0.07)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 18,
-        marginRight: 0,
-        boxSizing: 'border-box',
-        minHeight: '520px',
-        alignSelf: 'flex-start',
-      }}>
-        <h3 style={{ marginBottom: 8, color: '#23243a', fontWeight: 700, fontSize: '1.25rem', letterSpacing: 0.2 }}>Filters</h3>
-        <div style={{ marginBottom: 2 }}>
-          <label style={{ fontWeight: 500 }}>Minimum salary:</label>
-          <input type="number" name="salary_min" value={filters.salary_min} onChange={handleFilterChange} style={{ width: '100%', marginTop: 4, borderRadius: 8, border: '1px solid #e0f1fa', padding: '7px 10px', fontSize: '1rem', background: '#fff', color: '#23243a' }} placeholder="e.g. 100000" />
+      <form onSubmit={handleApplyFilters} className="jobs-filters-sidebar">
+        <h3 className="jobs-filters-title">Filters</h3>
+        <div className="jobs-filter-group">
+          <label className="jobs-filter-label">Minimum salary:</label>
+          <input 
+            type="number" 
+            name="salary_min" 
+            value={filters.salary_min} 
+            onChange={handleFilterChange} 
+            className="jobs-filter-input" 
+            placeholder="e.g. 100000" 
+          />
         </div>
-        <div style={{ marginBottom: 2 }}>
-          <label style={{ fontWeight: 500 }}>Industry:</label>
-          <input type="text" name="industry" value={filters.industry} onChange={handleFilterChange} style={{ width: '100%', marginTop: 4, borderRadius: 8, border: '1px solid #e0f1fa', padding: '7px 10px', fontSize: '1rem', background: '#fff', color: '#23243a' }} placeholder="e.g. IT, Marketing" />
+        <div className="jobs-filter-group">
+          <label className="jobs-filter-label">Industry:</label>
+          <input 
+            type="text" 
+            name="industry" 
+            value={filters.industry} 
+            onChange={handleFilterChange} 
+            className="jobs-filter-input" 
+            placeholder="e.g. IT, Marketing" 
+          />
         </div>
-        <div style={{ marginBottom: 2 }}>
-          <label style={{ fontWeight: 500 }}>Job title:</label>
-          <input type="text" name="title" value={filters.title} onChange={handleFilterChange} style={{ width: '100%', marginTop: 4, borderRadius: 8, border: '1px solid #e0f1fa', padding: '7px 10px', fontSize: '1rem', background: '#fff', color: '#23243a' }} placeholder="e.g. manager" />
+        <div className="jobs-filter-group">
+          <label className="jobs-filter-label">Job title:</label>
+          <input 
+            type="text" 
+            name="title" 
+            value={filters.title} 
+            onChange={handleFilterChange} 
+            className="jobs-filter-input" 
+            placeholder="e.g. manager" 
+          />
         </div>
-        <div style={{ marginBottom: 2 }}>
-          <label style={{ fontWeight: 500 }}>Format:</label>
-          <select name="format" value={filters.format} onChange={handleFilterChange} style={{ width: '100%', marginTop: 4, borderRadius: 8, border: '1px solid #e0f1fa', padding: '7px 10px', fontSize: '1rem', background: '#fff', color: '#23243a' }}>
+        <div className="jobs-filter-group">
+          <label className="jobs-filter-label">Format:</label>
+          <select 
+            name="format" 
+            value={filters.format} 
+            onChange={handleFilterChange} 
+            className="jobs-filter-input"
+          >
             {formatOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
           </select>
         </div>
-        <div style={{ marginBottom: 2 }}>
-          <label style={{ fontWeight: 500 }}>Location:</label>
-          <input type="text" name="location" value={filters.location} onChange={handleFilterChange} style={{ width: '100%', marginTop: 4, borderRadius: 8, border: '1px solid #e0f1fa', padding: '7px 10px', fontSize: '1rem', background: '#fff', color: '#23243a' }} placeholder="e.g. Moscow" />
+        <div className="jobs-filter-group">
+          <label className="jobs-filter-label">Location:</label>
+          <input 
+            type="text" 
+            name="location" 
+            value={filters.location} 
+            onChange={handleFilterChange} 
+            className="jobs-filter-input" 
+            placeholder="e.g. Moscow" 
+          />
         </div>
-        <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-          <button type="submit" style={{ flex: 1, background: 'var(--accent-blue)', color: '#fff', fontWeight: 600 }}>Apply</button>
-          <button type="button" onClick={handleResetFilters} style={{ flex: 1, background: '#e0f1fa', color: 'var(--primary-blue-dark)', fontWeight: 600, border: '1px solid #e0f1fa' }}>Reset</button>
+        <div className="jobs-filter-buttons">
+          <button type="submit" className="jobs-filter-button jobs-filter-apply">Apply</button>
+          <button type="button" onClick={handleResetFilters} className="jobs-filter-button jobs-filter-reset">Reset</button>
         </div>
       </form>
+
       {/* Jobs List + Pagination */}
-      <div style={{ flex: 1, minWidth: 0, boxSizing: 'border-box' }}>
+      <div className="jobs-main-content">
         <div className="main-content">
           <div className="header-row">
-            <h1 className="vacancies-title">Vacancies</h1>
-            <button onClick={() => fetchJobs()} disabled={loading} style={{ background: loading ? '#e0f1fa' : '#a084e8', color: loading ? '#bbb' : '#fff', fontWeight: 600, minWidth: 120, borderRadius: 12, fontSize: '1rem', padding: '0.7em 1.5em', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', transition: 'background 0.2s' }}>{loading ? 'Refreshing...' : 'Refresh'}</button>
+            <h1 className="vacancies-title desktop-only">Vacancies</h1>
+            <button 
+              onClick={() => fetchJobs()} 
+              disabled={loading} 
+              className="refresh-btn"
+              style={{ 
+                background: loading ? '#e0f1fa' : '#a084e8', 
+                color: loading ? '#bbb' : '#fff', 
+                cursor: loading ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {loading ? 'Refreshing...' : 'Refresh'}
+            </button>
           </div>
           {error && <div style={{ color: '#c94a4a', marginTop: 10 }}>{error}</div>}
           <div className="jobs-list" style={{ marginTop: 0 }}>
             {paginatedJobs.length === 0 && !loading && <div style={{ color: '#888', fontSize: '1.1rem', marginTop: 40 }}>No jobs found.</div>}
             {paginatedJobs.map(job => (
-              <div className="job-card" key={job.id} style={{ border: '1.5px solid #e0f1fa', boxShadow: '0 4px 24px rgba(59,180,231,0.10)', borderRadius: 18, padding: '1.5rem 2rem', marginBottom: 24, textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', background: '#fff', width: '100%', boxSizing: 'border-box' }}>
-                <div className="job-title" style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary-blue-dark)', marginBottom: 6, textAlign: 'left' }}>{job.title}
-                  {job.location && <span className="job-location" style={{ color: 'var(--text-muted)', fontSize: '1rem', marginLeft: 12 }}>{job.location}</span>}
+              <div className="job-card" key={job.id}>
+                <div className="job-title">
+                  {job.title}
+                  {job.location && <span className="job-location">{job.location}</span>}
                 </div>
-                {job.salary && <div className="job-salary" style={{ color: 'var(--primary-blue-dark)', fontWeight: 600, marginTop: 2, textAlign: 'left' }}>Salary: {job.salary}</div>}
-                {job.industry && <div className="job-industry" style={{ color: '#6b6b8a', fontSize: '1rem', marginTop: 2, textAlign: 'left' }}>Industry: {job.industry}</div>}
-                {job.format && <div className="job-format" style={{ color: '#6b6b8a', fontSize: '1rem', marginTop: 2, textAlign: 'left' }}>Format: {job.format}</div>}
+                {job.salary && <div className="job-salary">Salary: {job.salary}</div>}
+                {job.industry && <div style={{ color: '#6b6b8a', fontSize: '1rem', marginTop: 2, textAlign: 'left' }}>Industry: {job.industry}</div>}
+                {job.format && <div style={{ color: '#6b6b8a', fontSize: '1rem', marginTop: 2, textAlign: 'left' }}>Format: {job.format}</div>}
                 <div className="job-description" style={{ margin: '1rem 0 0.5rem 0', color: 'var(--text-main)', fontSize: '1.05rem', lineHeight: 1.5, height: '80px', maxHeight: '80px', overflowY: 'auto', width: '100%', background: '#f8fafd', borderRadius: 8, padding: '8px 12px', textAlign: 'left' }}>{job.description}</div>
-                {job.created_at && <div className="job-date" style={{ fontSize: '0.95rem', color: 'var(--text-muted)', marginTop: 10, textAlign: 'left' }}>Published: {formatRelativeDate(job.created_at)}</div>}
+                {job.created_at && <div className="job-date">Published: {formatRelativeDate(job.created_at)}</div>}
                 {job.contact_info && (
-                  <div className="job-contact" style={{ marginTop: 8, fontSize: '1rem', textAlign: 'left' }}>
+                  <div style={{ marginTop: 8, fontSize: '1rem', textAlign: 'left' }}>
                     Contact: {/^(https?:\/\/|t\.me\/|tg:)/i.test(job.contact_info.trim()) ? (
                       <a
                         href={job.contact_info.trim().startsWith('http') ? job.contact_info.trim() : (job.contact_info.trim().startsWith('t.me') ? `https://${job.contact_info.trim()}` : job.contact_info.trim())}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ color: '#2e7d32', fontWeight: 500, textDecoration: 'underline', wordBreak: 'break-all' }}
+                        className="job-link"
                       >
                         {job.contact_info}
                       </a>
