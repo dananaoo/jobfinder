@@ -1,3 +1,44 @@
+/* Override Tailwind CSS and inline styles for Progress Circle - Critical Styles */
+svg.progress-circle {
+  width: 28px !important;
+  height: 28px !important;
+  display: block !important;
+  flex-shrink: 0 !important;
+}
+
+/* Mobile responsive progress circle - Anti-Tailwind with maximum specificity */
+@media (max-width: 768px) {
+  svg.progress-circle,
+  .profile-section-icon svg.progress-circle,
+  .profile-section-indicators .profile-section-icon svg.progress-circle,
+  .page .profile-accordion .profile-section .profile-section-header .profile-section-indicators .profile-section-icon svg.progress-circle {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    min-height: 24px !important;
+    max-width: 24px !important;
+    max-height: 24px !important;
+    display: block !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  svg.progress-circle,
+  .profile-section-icon svg.progress-circle,
+  .profile-section-indicators .profile-section-icon svg.progress-circle,
+  .page .profile-accordion .profile-section .profile-section-header .profile-section-indicators .profile-section-icon svg.progress-circle {
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px !important;
+    min-height: 20px !important;
+    max-width: 20px !important;
+    max-height: 20px !important;
+    display: block !important;
+    flex-shrink: 0 !important;
+  }
+}
+
 #root {
   margin: 0;
   padding: 0;
@@ -1230,6 +1271,16 @@ input[type="file"] {
     padding: 2rem;
   }
   
+  /* For normal use-step: text first, image second */
+  .use-step .use-step-content {
+    order: 1;
+  }
+  
+  .use-step .use-step-image-placeholder {
+    order: 2;
+  }
+  
+  /* For reverse use-step: reset order to default (image first, text second) */
   .use-step.reverse .use-step-content,
   .use-step.reverse .use-step-image-placeholder {
     order: unset;
@@ -1979,5 +2030,240 @@ input[type="file"] {
 @media (min-width: 769px) {
   .jobs-page-header {
     display: none !important;
+  }
+}
+
+/* Profile page tablet responsiveness */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .profile-accordion {
+    min-width: 90%;
+    max-width: 800px;
+    padding: 0 16px;
+  }
+  
+  .form-item-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+  
+  .simple-data-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Profile page mobile responsiveness */
+@media (max-width: 768px) {
+  .profile-accordion {
+    min-width: 100%;
+    max-width: 100%;
+    width: 100%;
+    margin: 1rem auto 0 auto;
+    padding: 0 8px;
+    gap: 1rem;
+  }
+  
+  .profile-section {
+    border-radius: 12px;
+    margin: 0;
+  }
+  
+  .profile-section-header {
+    padding: 0.9rem 1.2rem;
+    font-size: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .profile-section-header span:first-child {
+    flex: 1;
+    min-width: 200px;
+  }
+  
+  .profile-section-indicators {
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+  
+  .profile-section-edit {
+    padding: 3px 10px !important;
+    font-size: 0.8rem !important;
+    height: 26px !important;
+    min-width: 45px !important;
+  }
+  
+  .profile-section-content {
+    padding: 0.9rem 1.2rem 1.1rem 1.2rem;
+  }
+  
+  /* Form adaptations */
+  .form-container {
+    gap: 0.75rem;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  
+  .form-row label {
+    margin-bottom: 2px !important;
+  }
+  
+  .form-item-grid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  
+  .form-item-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding-bottom: 0.75rem;
+  }
+  
+  .form-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  
+  .form-container input {
+    padding: 8px 12px;
+    font-size: 0.95rem;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+  }
+  
+  .form-actions button {
+    width: 100%;
+    padding: 10px 16px !important;
+    font-size: 0.95rem;
+  }
+  
+  /* Add button mobile adaptations */
+  .form-container button[style*="background: #4caf50"]:not(.form-actions button) {
+    width: 100% !important;
+    padding: 8px 16px !important;
+    font-size: 0.9rem !important;
+    margin-bottom: 12px !important;
+  }
+  
+  .remove-btn {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.9rem !important;
+    align-self: center;
+  }
+  
+  /* Data grid adaptations */
+  .simple-data-grid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  
+  .simple-data-grid > div {
+    padding: 6px 10px;
+    font-size: 0.9rem;
+  }
+  
+  /* Progress circle mobile adaptations for 768px */
+  .profile-section-icon .progress-circle,
+  .profile-section-indicators .profile-section-icon .progress-circle,
+  .profile-section .profile-section-header .profile-section-indicators .profile-section-icon .progress-circle {
+    width: 24px !important;
+    height: 24px !important;
+    max-width: 24px !important;
+    max-height: 24px !important;
+  }
+  
+  /* Universal progress circle override for mobile - High specificity */
+  .page .profile-accordion .profile-section .profile-section-header .profile-section-indicators .profile-section-icon svg.progress-circle {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    min-height: 24px !important;
+    max-width: 24px !important;
+    max-height: 24px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-accordion {
+    margin: 0.5rem auto 0 auto;
+    padding: 0 4px;
+    gap: 0.75rem;
+  }
+  
+  .profile-section {
+    border-radius: 10px;
+  }
+  
+  .profile-section-header {
+    padding: 0.7rem 1rem;
+    font-size: 0.95rem;
+  }
+  
+  .profile-section-header span:first-child {
+    min-width: 150px;
+  }
+  
+  .profile-section-edit {
+    padding: 2px 8px !important;
+    font-size: 0.75rem !important;
+    height: 24px !important;
+    min-width: 40px !important;
+  }
+  
+  .profile-section-content {
+    padding: 0.7rem 1rem 0.9rem 1rem;
+  }
+  
+  .form-container input {
+    padding: 6px 10px;
+    font-size: 0.9rem;
+  }
+  
+  .form-actions button {
+    padding: 8px 14px !important;
+    font-size: 0.9rem;
+  }
+  
+  .remove-btn {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 0.85rem !important;
+  }
+  
+  .simple-data-grid > div {
+    padding: 5px 8px;
+    font-size: 0.85rem;
+  }
+  
+  /* Progress circle mobile adaptations for very small screens */
+  .profile-section-icon .progress-circle,
+  .profile-section-indicators .profile-section-icon .progress-circle,
+  .profile-section .profile-section-header .profile-section-indicators .profile-section-icon .progress-circle {
+    width: 20px !important;
+    height: 20px !important;
+    max-width: 20px !important;
+    max-height: 20px !important;
+  }
+  
+  /* Universal progress circle override for very small screens - High specificity */
+  .page .profile-accordion .profile-section .profile-section-header .profile-section-indicators .profile-section-icon svg.progress-circle {
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px !important;
+    min-height: 20px !important;
+    max-width: 20px !important;
+    max-height: 20px !important;
+  }
+  
+  .profile-section-toggle {
+    font-size: 0.8rem;
   }
 }

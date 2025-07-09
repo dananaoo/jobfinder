@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import './App.css';
 import Home from './Home.jsx';
@@ -143,12 +143,14 @@ function AchievementsList({ achievements }) {
   );
 }
 
-function UploadResume({ user }) {
+function UploadResume({ user, onSessionExpired }) {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [profile, setProfile] = useState(null);
+
+
 
   if (!user || !user.id || !user.token) {
     return <div className="page" style={{textAlign:'center',marginTop:40}}><h2>Please log in to upload your resume.</h2></div>;
@@ -190,7 +192,16 @@ function UploadResume({ user }) {
         mode: 'cors',
         body: formData
       });
-      if (!res.ok) throw new Error('Failed to upload resume');
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          // Session expired, trigger auth modal
+          if (onSessionExpired) {
+            onSessionExpired();
+            return;
+          }
+        }
+        throw new Error('Failed to upload resume');
+      }
       const data = await res.json();
       setSuccess(data.message || 'Resume processed and profile updated!');
       setProfile(data.profile);
@@ -257,13 +268,39 @@ function UploadResume({ user }) {
   );
 }
 
-function Recommendations({ user }) {
+function Recommendations({ user, onSessionExpired }) {
   const [recs, setRecs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [openInsight, setOpenInsight] = useState(null);
   const [page, setPage] = useState(0);
+  const [profile, setProfile] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(false);
   const JOBS_PER_PAGE = 5;
+
+  const fetchProfile = async () => {
+    if (!user || !user.id || !user.token) return;
+    setProfileLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/profile`, {
+        headers: { 'Authorization': `Bearer ${user.token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setProfile(data);
+      } else if (res.status === 401 || res.status === 403) {
+        // Session expired, trigger auth modal
+        if (onSessionExpired) {
+          onSessionExpired();
+          return;
+        }
+      }
+    } catch (e) {
+      console.error('Failed to fetch profile', e);
+    } finally {
+      setProfileLoading(false);
+    }
+  };
 
   const fetchRecs = async () => {
     if (!user || !user.id || !user.token) return;
@@ -271,7 +308,16 @@ function Recommendations({ user }) {
     setError(null);
     try {
       const res = await fetch(`${API_URL}/recommendations?user_id=${user.id}`);
-      if (!res.ok) throw new Error('Failed to fetch recommendations');
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          // Session expired, trigger auth modal
+          if (onSessionExpired) {
+            onSessionExpired();
+            return;
+          }
+        }
+        throw new Error('Failed to fetch recommendations');
+      }
       const data = await res.json();
       setRecs(data);
       setPage(0); // Reset to first page on new fetch
@@ -283,29 +329,116 @@ function Recommendations({ user }) {
   };
 
   useEffect(() => {
-    if (user && user.id && user.token) fetchRecs();
+    if (user && user.id && user.token) {
+      fetchProfile();
+      fetchRecs();
+    }
     // eslint-disable-next-line
   }, [user]);
 
-  // Message for empty recommendations
-  const emptyMessage = (
-    <div style={{
-      background: '#fff6f6',
-      color: '#c94a4a',
-      border: '1.5px solid #e57373',
-      borderRadius: 10,
-      padding: '18px 22px',
-      margin: '32px auto',
-      maxWidth: 520,
-      textAlign: 'center',
-      fontSize: '1.13rem',
-      fontWeight: 500,
-      boxShadow: '0 2px 12px rgba(231,59,59,0.07)'
-    }}>
-      <span role="img" aria-label="info" style={{fontSize:'1.5em',marginRight:8}}>ℹ️</span>
-      To get personalized recommendations, please fill out the <b>Job Preferences</b> section in your profile: desired position, city, work format, schedule, industries and skills. The more information you provide — the better recommendations you'll get!
-    </div>
+  // Check if profile has key job preferences filled
+  const hasJobPreferences = profile && (
+    isFilled(profile.desired_position) || 
+    isFilled(profile.desired_city) || 
+    isFilled(profile.desired_format) || 
+    isFilled(profile.desired_work_time) || 
+    isFilled(profile.industries)
   );
+  
+  const hasAnyProfileData = profile && (
+    isFilled(profile.full_name) ||
+    isFilled(profile.email) ||
+    isFilled(profile.phone_number) ||
+    isFilled(profile.experience) ||
+    isFilled(profile.education) ||
+    isFilled(profile.skills) ||
+    hasJobPreferences
+  );
+
+  // Message for empty recommendations - different messages based on profile completeness
+  const getEmptyMessage = () => {
+    if (profileLoading) {
+      return (
+        <div style={{
+          background: '#f8fafd',
+          color: '#666',
+          border: '1.5px solid #e0e0e0',
+          borderRadius: 10,
+          padding: '18px 22px',
+          margin: '32px auto',
+          maxWidth: 520,
+          textAlign: 'center',
+          fontSize: '1.13rem',
+          fontWeight: 500,
+        }}>
+          <span role="img" aria-label="loading" style={{fontSize:'1.5em',marginRight:8}}>⏳</span>
+          Checking your profile...
+        </div>
+      );
+    }
+
+    if (!hasAnyProfileData) {
+      return (
+        <div style={{
+          background: '#fff6f6',
+          color: '#c94a4a',
+          border: '1.5px solid #e57373',
+          borderRadius: 10,
+          padding: '18px 22px',
+          margin: '32px auto',
+          maxWidth: 520,
+          textAlign: 'center',
+          fontSize: '1.13rem',
+          fontWeight: 500,
+          boxShadow: '0 2px 12px rgba(231,59,59,0.07)'
+        }}>
+          <span role="img" aria-label="info" style={{fontSize:'1.5em',marginRight:8}}>ℹ️</span>
+          To get personalized recommendations, please fill out your <b>Profile</b> first. Start with basic information and job preferences: desired position, city, work format, schedule, industries and skills.
+        </div>
+      );
+    }
+
+    if (!hasJobPreferences) {
+      return (
+        <div style={{
+          background: '#fff8e1',
+          color: '#f57f17',
+          border: '1.5px solid #ffb74d',
+          borderRadius: 10,
+          padding: '18px 22px',
+          margin: '32px auto',
+          maxWidth: 520,
+          textAlign: 'center',
+          fontSize: '1.13rem',
+          fontWeight: 500,
+          boxShadow: '0 2px 12px rgba(245,127,23,0.07)'
+        }}>
+          <span role="img" aria-label="warning" style={{fontSize:'1.5em',marginRight:8}}>⚠️</span>
+          Great start! To get better recommendations, please fill out the <b>Job Preferences</b> section: desired position, city, work format, schedule, and industries.
+        </div>
+      );
+    }
+
+    // Has profile data and job preferences, but no recommendations
+    return (
+      <div style={{
+        background: '#e8f5e8',
+        color: '#2e7d32',
+        border: '1.5px solid #4caf50',
+        borderRadius: 10,
+        padding: '18px 22px',
+        margin: '32px auto',
+        maxWidth: 520,
+        textAlign: 'center',
+        fontSize: '1.13rem',
+        fontWeight: 500,
+        boxShadow: '0 2px 12px rgba(76,175,80,0.07)'
+      }}>
+        <span role="img" aria-label="search" style={{fontSize:'1.5em',marginRight:8}}>🔍</span>
+        Your profile looks great! We're actively searching for job recommendations that match your preferences. Check back soon or try refreshing.
+      </div>
+    );
+  };
 
   // Styles for job card and AI insight popover
   const cardStyle = {
@@ -386,7 +519,7 @@ function Recommendations({ user }) {
         : <>
             {error && <div style={{color: 'red', marginTop: 10}}>{error}</div>}
             <div className="jobs-list" style={{display:'flex',flexDirection:'column',alignItems:'center',marginTop:24, width:'100%'}}>
-              {paginatedJobs.length === 0 && !loading && emptyMessage}
+              {paginatedJobs.length === 0 && !loading && getEmptyMessage()}
               {paginatedJobs.map((rec, i) => (
                 <div className="job-card" key={rec.id || i} style={cardStyle}>
                   {/* Header */}
@@ -525,9 +658,11 @@ function Recommendations({ user }) {
   );
 }
 
-function App() {
+function AppContent() {
   const [user, setUser] = useState(null);
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
+  const [redirectAfterAuth, setRedirectAfterAuth] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     try {
@@ -548,7 +683,24 @@ function App() {
     };
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
-    window.location = '/profile';
+    setAuthModalOpen(false);
+    
+    // Redirect to the page user was trying to access, or default to profile
+    if (redirectAfterAuth) {
+      navigate(redirectAfterAuth);
+      setRedirectAfterAuth(null);
+    } else {
+      navigate('/profile');
+    }
+  };
+
+  const handleSessionExpired = (currentPath = null) => {
+    localStorage.removeItem('user');
+    setUser(null);
+    if (currentPath) {
+      setRedirectAfterAuth(currentPath);
+    }
+    setAuthModalOpen(true);
   };
 
   const handleLogout = () => {
@@ -557,7 +709,7 @@ function App() {
   };
 
   return (
-    <Router>
+    <>
       <header className="app-header">
         <nav className="header-nav-container">
           <div className="header-left">
@@ -583,12 +735,20 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/jobs" element={<Jobs />} />
-          <Route path="/profile" element={<Profile user={user} />} />
-          <Route path="/upload-resume" element={<UploadResume user={user} />} />
-          <Route path="/recommendations" element={<Recommendations user={user}/>} />
+          <Route path="/profile" element={<Profile user={user} onSessionExpired={() => handleSessionExpired('/profile')} />} />
+          <Route path="/upload-resume" element={<UploadResume user={user} onSessionExpired={() => handleSessionExpired('/upload-resume')} />} />
+          <Route path="/recommendations" element={<Recommendations user={user} onSessionExpired={() => handleSessionExpired('/recommendations')} />} />
         </Routes>
       </main>
       <AuthModal open={isAuthModalOpen} onClose={() => setAuthModalOpen(false)} onAuthSuccess={handleAuthSuccess} />
+    </>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }

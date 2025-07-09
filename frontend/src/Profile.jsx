@@ -24,7 +24,7 @@ const tryParseJSON = (jsonString, fallback = []) => {
     }
 };
 
-function Profile({ user }) {
+function Profile({ user, onSessionExpired }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -48,6 +48,13 @@ function Profile({ user }) {
         }
       });
       if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          // Session expired, trigger auth modal
+          if (onSessionExpired) {
+            onSessionExpired();
+            return;
+          }
+        }
         const errText = await res.text();
         throw new Error(`Profile not found: ${errText}`);
       }
@@ -128,6 +135,13 @@ function Profile({ user }) {
             body: JSON.stringify(body),
         });
         if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+              // Session expired, trigger auth modal
+              if (onSessionExpired) {
+                onSessionExpired();
+                return;
+              }
+            }
             const errData = await res.json();
             throw new Error(errData.detail || 'Failed to save');
         }

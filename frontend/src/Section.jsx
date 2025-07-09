@@ -1,23 +1,46 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 // Кружок прогресса SVG
-function ProgressCircle({ percent, size = 28, stroke = 4 }) {
-  const radius = (size - stroke) / 2;
+function ProgressCircle({ percent, stroke = 4 }) {
+  const [circleSize, setCircleSize] = useState(28);
+
+  useEffect(() => {
+    const updateSize = () => {
+      if (window.innerWidth <= 480) {
+        setCircleSize(20);
+      } else if (window.innerWidth <= 768) {
+        setCircleSize(24);
+      } else {
+        setCircleSize(28);
+      }
+    };
+
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
+
+  const radius = (circleSize - stroke) / 2;
   const circ = 2 * Math.PI * radius;
   const offset = circ * (1 - percent / 100);
+  
   return (
-    <svg width={size} height={size}>
+    <svg 
+      className="progress-circle" 
+      viewBox={`0 0 ${circleSize} ${circleSize}`} 
+      style={{ width: `${circleSize}px`, height: `${circleSize}px` }}
+    >
       <circle
-        cx={size / 2}
-        cy={size / 2}
+        cx={circleSize / 2}
+        cy={circleSize / 2}
         r={radius}
         stroke="#e0f1fa"
         strokeWidth={stroke}
         fill="none"
       />
       <circle
-        cx={size / 2}
-        cy={size / 2}
+        cx={circleSize / 2}
+        cy={circleSize / 2}
         r={radius}
         stroke="#4caf50"
         strokeWidth={stroke}
