@@ -96,7 +96,7 @@ export default function AuthModal({ open, onClose, onAuthSuccess }) {
     }}>
       <div style={{
         background: '#fff', borderRadius: 18, boxShadow: '0 4px 32px 0 rgba(59,180,231,0.13)',
-        padding: '28px 32px', minWidth: 420, maxWidth: 480, width: '100%', position: 'relative', color: '#23243a',
+        padding: '28px 32px', maxWidth: 480, width: '79vw', position: 'relative', color: '#23243a',
         maxHeight: '90vh', overflowY: 'auto'
       }}>
         <button onClick={onClose} style={{position:'absolute',top:12,right:16,fontSize:22,background:'none',border:'none',cursor:'pointer',color:'#888'}}>×</button>

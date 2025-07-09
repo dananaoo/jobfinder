@@ -146,13 +146,17 @@ body {
 
 .header-nav {
   display: flex;
-  gap: 1.5rem;
+  gap: 1rem;
   align-items: center;
 }
 
 .header-nav > .login-button, .header-nav > .logout-button {
-  margin-left: 2.5rem;
+  margin-left: 1rem;
   pointer-events: auto;
+}
+
+.header-nav .LanguageSwitcher{
+  margin-top: -10px;
 }
 
 .header-nav a, .login-button, .logout-button {
@@ -175,6 +179,7 @@ body {
   border: none;
   cursor: pointer;
   margin: 0;
+  white-space: nowrap;
 }
 
 .header-nav a:hover {
@@ -197,7 +202,6 @@ body {
   background: var(--accent-blue);
   color: #fff;
   border: none;
-  margin-left: 1.5rem;
   cursor: pointer;
   margin-bottom: 15px;
 }
@@ -2338,7 +2342,6 @@ input[type="file"] {
 /* ===== LANGUAGE SWITCHER DROPDOWN STYLES ===== */
 .language-switcher-dropdown {
   position: relative;
-  display: inline-block;
   margin-left: 1rem;
 }
 
@@ -2356,6 +2359,7 @@ input[type="file"] {
   transition: all 0.2s ease;
   font-size: 0.9rem;
   font-weight: 500;
+  margin-top: 0px;
 }
 
 .language-toggle-btn:hover {
