@@ -1,10 +1,12 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 function ExperienceList({ experience }) {
+  const { t } = useTranslation();
   if (!experience) return null;
   let items = experience;
   if (typeof experience === 'string') {
-    try { items = JSON.parse(experience); } catch { return <div>Invalid format</div>; }
+    try { items = JSON.parse(experience); } catch { return <div>{t('auth.invalid_format')}</div>; }
   }
   if (!Array.isArray(items)) items = [items];
   return (
@@ -22,7 +24,7 @@ function ExperienceList({ experience }) {
               {exp.responsibilities.map((r, idx) => <li key={idx}>{r}</li>)}
             </ul>
           )}
-          {exp.achievement && <div style={{marginTop:6,color:'#2e7d32'}}><b>Achievement:</b> {exp.achievement}</div>}
+          {exp.achievement && <div style={{marginTop:6,color:'#2e7d32'}}><b>{t('auth.achievement_label')}:</b> {exp.achievement}</div>}
         </div>
       ))}
     </div>

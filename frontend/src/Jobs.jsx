@@ -71,7 +71,7 @@ function Jobs() {
         ? `${API_URL}/jobs/search?${params.toString()}`
         : `${API_URL}/jobs/search`;
       const res = await fetch(url);
-      if (!res.ok) throw new Error('Failed to fetch jobs');
+              if (!res.ok) throw new Error(t('auth.error_fetch_jobs'));
       const data = await res.json();
       setJobs(data);
       setPage(0); // Reset to first page on new search

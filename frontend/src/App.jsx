@@ -31,57 +31,7 @@ function Section({ title, filled, children, open, onClick, icon }) {
   );
 }
 
-function ExperienceList({ experience }) {
-  if (!experience) return null;
-  let items = experience;
-  if (typeof experience === 'string') {
-    try { items = JSON.parse(experience); } catch { return <div>Invalid format</div>; }
-  }
-  if (!Array.isArray(items)) items = [items];
-  return (
-    <div style={{display:'flex',flexDirection:'column',gap:16}}>
-      {items.map((exp, i) => (
-        <div key={i} style={{background:'#f8f8f8',borderRadius:10,padding:'14px 18px',boxShadow:'0 1px 6px 0 rgba(0,0,0,0.04)'}}>
-          <div style={{fontWeight:600,fontSize:'1.08rem',marginBottom:2}}>{exp.title || '—'}{exp.company && <span style={{color:'#888',marginLeft:8}}>@ {exp.company}</span>}</div>
-          <div style={{color:'#888',fontSize:'0.98rem',marginBottom:6}}>
-            {exp.location && <span>{exp.location} </span>}
-            {exp.start_date && <span>• {exp.start_date}</span>}
-            {exp.end_date && <span> — {exp.end_date}</span>}
-          </div>
-          {exp.responsibilities && Array.isArray(exp.responsibilities) && (
-            <ul style={{margin:'6px 0 0 0',paddingLeft:18}}>
-              {exp.responsibilities.map((r, idx) => <li key={idx}>{r}</li>)}
-            </ul>
-          )}
-          {exp.achievement && <div style={{marginTop:6,color:'#2e7d32'}}><b>Achievement:</b> {exp.achievement}</div>}
-        </div>
-      ))}
-    </div>
-  );
-}
 
-function EducationList({ education }) {
-  if (!education) return null;
-  let items = education;
-  if (typeof education === 'string') {
-    try { items = JSON.parse(education); } catch { return <div>Invalid format</div>; }
-  }
-  if (!Array.isArray(items)) items = [items];
-  return (
-    <div style={{display:'flex',flexDirection:'column',gap:16}}>
-      {items.map((ed, i) => (
-        <div key={i} style={{background:'#f8f8f8',borderRadius:10,padding:'14px 18px',boxShadow:'0 1px 6px 0 rgba(0,0,0,0.04)'}}>
-          <div style={{fontWeight:600,fontSize:'1.08rem',marginBottom:2}}>{ed.university || '—'}</div>
-          <div style={{color:'#888',fontSize:'0.98rem',marginBottom:6}}>{ed.degree}</div>
-          <div style={{color:'#888',fontSize:'0.98rem'}}>
-            {ed.start_date && <span>{ed.start_date}</span>}
-            {ed.end_date && <span> — {ed.end_date}</span>}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 function SkillsList({ skills }) {
   if (!skills) return null;
@@ -188,10 +138,10 @@ function UploadResume({ user, onSessionExpired }) {
             return;
           }
         }
-        throw new Error('Failed to upload resume');
-      }
-      const data = await res.json();
-      setSuccess(data.message || t('upload.success'));
+        throw new Error(t('auth.error_upload_resume'));
+              }
+        await res.json(); // Получаем ответ, но не используем сообщение с сервера
+        setSuccess(t('upload.success'));
     } catch (e) {
       setError(e.message);
     } finally {
@@ -304,7 +254,7 @@ function Recommendations({ user, onSessionExpired }) {
             return;
           }
         }
-        throw new Error('Failed to fetch recommendations');
+        throw new Error(t('auth.error_fetch_recommendations'));
       }
       const data = await res.json();
       setRecs(data);

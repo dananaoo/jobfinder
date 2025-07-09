@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 const LanguageSwitcher = ({ className = '' }) => {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -38,7 +38,7 @@ const LanguageSwitcher = ({ className = '' }) => {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="language-toggle-btn"
-        title="Change language"
+        title={t('auth.change_language')}
       >
         <span className="globe-icon">🌐</span>
         <span className="current-lang">{currentLanguage.flag}</span>

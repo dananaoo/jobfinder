@@ -1,10 +1,12 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 function EducationList({ education }) {
+  const { t } = useTranslation();
   if (!education) return null;
   let items = education;
   if (typeof education === 'string') {
-    try { items = JSON.parse(education); } catch { return <div>Invalid format</div>; }
+    try { items = JSON.parse(education); } catch { return <div>{t('auth.invalid_format')}</div>; }
   }
   if (!Array.isArray(items)) items = [items];
   return (

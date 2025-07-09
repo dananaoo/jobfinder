@@ -58,7 +58,7 @@ function Profile({ user, onSessionExpired }) {
           }
         }
         const errText = await res.text();
-        throw new Error(`Profile not found: ${errText}`);
+        throw new Error(`${t('auth.error_profile_not_found')}: ${errText}`);
       }
       const data = await res.json();
       setProfile(data);
@@ -145,7 +145,7 @@ function Profile({ user, onSessionExpired }) {
               }
             }
             const errData = await res.json();
-            throw new Error(errData.detail || 'Failed to save');
+            throw new Error(errData.detail || t('auth.error_save_profile'));
         }
         const data = await res.json();
         setProfile(data);
