@@ -12,7 +12,9 @@
     "back": "Back",
     "next": "Next",
     "previous": "Previous",
-    "close": "Close"
+    "close": "Close",
+    "pagination_previous": "Previous",
+    "pagination_next": "Next"
   },
   "header": {
     "home": "Home",
@@ -51,7 +53,22 @@
     "step3_button": "Edit Profile",
     "step4_title": "4. Get Recommendations",
     "step4_desc": "Receive AI-powered job recommendations tailored specifically to your profile.",
-    "step4_button": "View Recommendations"
+    "step4_button": "View Recommendations",
+    "work_step1_title": "We scan top Telegram channels",
+    "work_step1_desc": "Continuously monitoring the best job channels for new opportunities",
+    "work_step2_title": "Filter by your interests and experience",
+    "work_step2_desc": "AI matches jobs based on your skills, location, and preferences",
+    "work_step3_title": "Show only the most relevant vacancies",
+    "work_step3_desc": "Get personalized job recommendations that actually fit your profile",
+    "feature1_title": "Automatic Filtering",
+    "feature1_desc": "No more scrolling through irrelevant job posts. We filter everything for you.",
+    "feature2_title": "AI Support",
+    "feature2_desc": "Smart profile filling, contact extraction, and job matching powered by AI.",
+    "feature3_title": "Works Offline",
+    "feature3_desc": "Get job updates even when you're not online. We work 24/7 for you.",
+    "browse_alternative_title": "Or Browse Jobs Without Registration",
+    "browse_alternative_desc": "Not ready to sign up? You can still browse all available vacancies without creating an account.",
+    "browse_alternative_button": "Browse All Jobs"
   },
   "upload": {
     "title": "Upload Resume",
@@ -113,7 +130,9 @@
     },
     "not_filled": "Not filled",
     "save_success": "Profile updated successfully",
-    "save_error": "Failed to save changes"
+    "save_error": "Failed to save changes",
+    "error_prefix": "Error",
+    "add_button": "Add"
   },
   "recommendations": {
     "title": "Job Recommendations",
@@ -141,6 +160,23 @@
     "industry": "Industry",
     "job_title": "Job Title",
     "format": "Format",
-    "location": "Location"
+    "location": "Location",
+    "placeholder_salary": "e.g. 100000",
+    "placeholder_industry": "e.g. IT, Marketing",
+    "placeholder_job_title": "e.g. manager",
+    "placeholder_location": "e.g. Moscow",
+    "format_any": "Any format",
+    "format_online": "Online",
+    "format_offline": "Offline",
+    "format_hybrid": "Hybrid",
+    "salary_label": "Salary",
+    "industry_label": "Industry",
+    "format_label": "Format",
+    "published": "Published",
+    "contact": "Contact",
+    "just_now": "just now",
+    "minutes_ago": "{{count}} minute{{s}} ago",
+    "hours_ago": "{{count}} hour{{s}} ago",
+    "days_ago": "{{count}} day{{s}} ago"
   }
 } 

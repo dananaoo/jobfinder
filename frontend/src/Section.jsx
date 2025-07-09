@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 // Кружок прогресса SVG
 function ProgressCircle({ percent, stroke = 4 }) {
@@ -55,6 +56,7 @@ function ProgressCircle({ percent, stroke = 4 }) {
 }
 
 function Section({ title, filled, progressPercent = 0, children, open, onClick, onEdit, isEditing }) {
+  const { t } = useTranslation();
   return (
     <div className="profile-section">
       <div className={`profile-section-header ${filled ? 'complete' : 'incomplete'}`} onClick={onClick}>
@@ -87,7 +89,7 @@ function Section({ title, filled, progressPercent = 0, children, open, onClick, 
               onMouseOver={e => e.target.style.background = '#a770efcc'}
               onMouseOut={e => e.target.style.background = '#a770ef'}
             >
-              Edit
+              {t('common.edit')}
             </button>
           )}
           <span className="profile-section-icon">

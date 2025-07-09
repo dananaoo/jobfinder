@@ -36,20 +36,20 @@ function Home() {
             <div className="step-card">
               <div className="step-number">1</div>
               <div className="step-icon">🔍</div>
-              <div className="step-title">We scan top Telegram channels</div>
-              <div className="step-desc">Continuously monitoring the best job channels for new opportunities</div>
+              <div className="step-title">{t('home.work_step1_title')}</div>
+              <div className="step-desc">{t('home.work_step1_desc')}</div>
             </div>
             <div className="step-card">
               <div className="step-number">2</div>
               <div className="step-icon">🎯</div>
-              <div className="step-title">Filter by your interests and experience</div>
-              <div className="step-desc">AI matches jobs based on your skills, location, and preferences</div>
+              <div className="step-title">{t('home.work_step2_title')}</div>
+              <div className="step-desc">{t('home.work_step2_desc')}</div>
             </div>
             <div className="step-card">
               <div className="step-number">3</div>
               <div className="step-icon">✨</div>
-              <div className="step-title">Show only the most relevant vacancies</div>
-              <div className="step-desc">Get personalized job recommendations that actually fit your profile</div>
+              <div className="step-title">{t('home.work_step3_title')}</div>
+              <div className="step-desc">{t('home.work_step3_desc')}</div>
             </div>
           </div>
         </div>
@@ -60,18 +60,18 @@ function Home() {
           <div className="landing-features">
             <div className="feature-card">
               <div className="feature-icon">🔄</div>
-              <div className="feature-title">Automatic Filtering</div>
-              <div className="feature-desc">No more scrolling through irrelevant job posts. We filter everything for you.</div>
+              <div className="feature-title">{t('home.feature1_title')}</div>
+              <div className="feature-desc">{t('home.feature1_desc')}</div>
             </div>
             <div className="feature-card">
               <div className="feature-icon">💡</div>
-              <div className="feature-title">AI Support</div>
-              <div className="feature-desc">Smart profile filling, contact extraction, and job matching powered by AI.</div>
+              <div className="feature-title">{t('home.feature2_title')}</div>
+              <div className="feature-desc">{t('home.feature2_desc')}</div>
             </div>
             <div className="feature-card">
               <div className="feature-icon">📱</div>
-              <div className="feature-title">Works Offline</div>
-              <div className="feature-desc">Get job updates even when you're not online. We work 24/7 for you.</div>
+              <div className="feature-title">{t('home.feature3_title')}</div>
+              <div className="feature-desc">{t('home.feature3_desc')}</div>
             </div>
           </div>
         </div>
@@ -138,10 +138,10 @@ function Home() {
                   <img src="/vacancies.png" alt="Browse All Jobs" className="alternative-img" />
                 </div>
                 <div className="alternative-content">
-                  <h3 className="alternative-title">Or Browse Jobs Without Registration</h3>
-                  <p className="alternative-desc">Not ready to sign up? You can still browse all available vacancies without creating an account.</p>
+                  <h3 className="alternative-title">{t('home.browse_alternative_title')}</h3>
+                  <p className="alternative-desc">{t('home.browse_alternative_desc')}</p>
                   <button className="alternative-btn" onClick={() => window.location.href='/jobs'}>
-                    Browse All Jobs
+                    {t('home.browse_alternative_button')}
                   </button>
                 </div>
               </div>

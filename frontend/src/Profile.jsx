@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import Section from './Section.jsx';
 import ExperienceList from './ExperienceList.jsx';
 import EducationList from './EducationList.jsx';
@@ -25,6 +26,7 @@ const tryParseJSON = (jsonString, fallback = []) => {
 };
 
 function Profile({ user, onSessionExpired }) {
+  const { t } = useTranslation();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -182,26 +184,26 @@ function Profile({ user, onSessionExpired }) {
     }));
   };
 
-  if (loading) return <div className="page"><h2>Loading Profile...</h2></div>;
-  if (error) return <div className="page"><h2>Error: {error}</h2></div>;
-  if (!profile && !isGuest) return <div className="page"><h2>Profile not found.</h2></div>;
+  if (loading) return <div className="page"><h2>{t('profile.loading')}</h2></div>;
+  if (error) return <div className="page"><h2>{t('profile.error_prefix')}: {error}</h2></div>;
+  if (!profile && !isGuest) return <div className="page"><h2>{t('profile.not_found')}</h2></div>;
 
   const sections = [
       { 
         id: 'personal', 
-        title: 'Personal Information', 
+        title: t('profile.sections.personal'), 
         fields: ['full_name', 'email', 'phone_number', 'address', 'citizenship'] 
       },
       { 
         id: 'preferences', 
-        title: 'Job Preferences', 
+        title: t('profile.sections.preferences'), 
         fields: ['desired_position', 'desired_city', 'desired_format', 'desired_work_time', 'industries'] 
       },
-      { id: 'experience', title: 'Work Experience', Component: ExperienceList },
-      { id: 'education', title: 'Education', Component: EducationList },
-      { id: 'skills', title: 'Skills', Component: SkillsList },
-      { id: 'languages', title: 'Languages', Component: LanguagesList },
-      { id: 'achievements', title: 'Achievements', Component: AchievementsList },
+      { id: 'experience', title: t('profile.sections.experience'), Component: ExperienceList },
+      { id: 'education', title: t('profile.sections.education'), Component: EducationList },
+      { id: 'skills', title: t('profile.sections.skills'), Component: SkillsList },
+      { id: 'languages', title: t('profile.sections.languages'), Component: LanguagesList },
+      { id: 'achievements', title: t('profile.sections.achievements'), Component: AchievementsList },
   ];
 
   const renderGenericListForm = (section, placeholder) => {
@@ -255,7 +257,7 @@ function Profile({ user, onSessionExpired }) {
                       cursor: 'pointer',
                       marginBottom: '16px'
                   }}
-              >+ Add</button>
+              >+ {t('profile.add_button')}</button>
               <div className="form-actions">
                   <button 
                       onClick={() => handleSave(section)} 
@@ -269,7 +271,7 @@ function Profile({ user, onSessionExpired }) {
                           cursor: editLoading ? 'not-allowed' : 'pointer',
                           marginRight: '10px'
                       }}
-                  >Save</button>
+                  >{t('common.save')}</button>
                   <button 
                       onClick={() => handleCancel(section)}
                       style={{
@@ -280,7 +282,7 @@ function Profile({ user, onSessionExpired }) {
                           borderRadius: '8px',
                           cursor: 'pointer'
                       }}
-                  >Cancel</button>
+                  >{t('common.cancel')}</button>
               </div>
               {editError && <div className="form-error" style={{color: '#d32f2f', marginTop: '10px'}}>{editError}</div>}
           </div>
@@ -328,7 +330,7 @@ function Profile({ user, onSessionExpired }) {
                     cursor: 'pointer',
                     marginBottom: '16px'
                 }}
-            >+ Add</button>
+            >+ {t('profile.add_button')}</button>
             <div className="form-actions">
                 <button 
                     onClick={() => handleSave(section)} 
@@ -342,7 +344,7 @@ function Profile({ user, onSessionExpired }) {
                         cursor: editLoading ? 'not-allowed' : 'pointer',
                         marginRight: '10px'
                     }}
-                >Save</button>
+                >{t('common.save')}</button>
                 <button 
                     onClick={() => handleCancel(section)}
                     style={{
@@ -353,7 +355,7 @@ function Profile({ user, onSessionExpired }) {
                         borderRadius: '8px',
                         cursor: 'pointer'
                     }}
-                >Cancel</button>
+                >{t('common.cancel')}</button>
             </div>
             {editError && <div className="form-error" style={{color: '#d32f2f', marginTop: '10px'}}>{editError}</div>}
         </div>
@@ -397,7 +399,7 @@ function Profile({ user, onSessionExpired }) {
                         cursor: editLoading ? 'not-allowed' : 'pointer',
                         marginRight: '10px'
                     }}
-                >Save</button>
+                >{t('common.save')}</button>
                 <button 
                     onClick={() => handleCancel(section)}
                     style={{
@@ -408,7 +410,7 @@ function Profile({ user, onSessionExpired }) {
                         borderRadius: '8px',
                         cursor: 'pointer'
                     }}
-                >Cancel</button>
+                >{t('common.cancel')}</button>
             </div>
             {editError && <div className="form-error" style={{color: '#d32f2f', marginTop: '10px'}}>{editError}</div>}
         </div>
@@ -420,7 +422,7 @@ function Profile({ user, onSessionExpired }) {
           <div className="simple-data-grid">
               {fields.map(({name, placeholder}) => (
                   <div key={name}>
-                      <b>{placeholder}:</b> {profile[name] || <span className="not-filled">Not filled</span>}
+                      <b>{placeholder}:</b> {profile[name] || <span className="not-filled">{t('profile.not_filled')}</span>}
                   </div>
               ))}
           </div>
@@ -430,10 +432,10 @@ function Profile({ user, onSessionExpired }) {
   return (
     <div className="page">
       {isGuest ? (
-        <div style={{textAlign:'center', color:'#c94a4a', marginTop: 40, fontWeight:600, fontSize:'1.2rem'}}>Please log in to view your profile.</div>
+        <div style={{textAlign:'center', color:'#c94a4a', marginTop: 40, fontWeight:600, fontSize:'1.2rem'}}>{t('profile.login_required')}</div>
       ) : (
         <>
-          <h2>User Profile{profile && profile.full_name ? `: ${profile.full_name}` : user && user.email ? `: ${user.email}` : ''}</h2>
+          <h2>{t('profile.title')}{profile && profile.full_name ? `: ${profile.full_name}` : user && user.email ? `: ${user.email}` : ''}</h2>
           <div className="profile-accordion">
             {sections.map(({ id, title, Component, fields }) => {
           let progressPercent = 0;
@@ -456,59 +458,59 @@ function Profile({ user, onSessionExpired }) {
               onEdit={isGuest ? undefined : () => handleEdit(id)}
             >
               {isGuest ? (
-                <div style={{color:'#aaa',fontStyle:'italic',padding:'12px 0'}}>Log in to view and edit this section.</div>
+                <div style={{color:'#aaa',fontStyle:'italic',padding:'12px 0'}}>{t('profile.login_section')}</div>
               ) : editSections[id]
                 ? (
                     id === 'personal' ? renderSimpleForm('personal', [
-                        {name: 'full_name', placeholder: 'Full Name'},
-                        {name: 'email', placeholder: 'Email'},
-                        {name: 'phone_number', placeholder: 'Phone'},
-                        {name: 'address', placeholder: 'Address'},
-                        {name: 'citizenship', placeholder: 'Citizenship'},
+                        {name: 'full_name', placeholder: t('profile.fields.full_name')},
+                        {name: 'email', placeholder: t('profile.fields.email')},
+                        {name: 'phone_number', placeholder: t('profile.fields.phone')},
+                        {name: 'address', placeholder: t('profile.fields.address')},
+                        {name: 'citizenship', placeholder: t('profile.fields.citizenship')},
                     ]) :
                     id === 'preferences' ? renderSimpleForm('preferences', [
-                        {name: 'desired_position', placeholder: 'Desired Position'},
-                        {name: 'desired_city', placeholder: 'Desired City'},
-                        {name: 'desired_format', placeholder: 'Work Format'},
-                        {name: 'desired_work_time', placeholder: 'Work Schedule'},
-                        {name: 'industries', placeholder: 'Industries'},
+                        {name: 'desired_position', placeholder: t('profile.fields.desired_position')},
+                        {name: 'desired_city', placeholder: t('profile.fields.desired_city')},
+                        {name: 'desired_format', placeholder: t('profile.fields.desired_format')},
+                        {name: 'desired_work_time', placeholder: t('profile.fields.desired_work_time')},
+                        {name: 'industries', placeholder: t('profile.fields.industries')},
                     ]) :
                     id === 'experience' ? renderObjectListForm('experience', [
-                        {name: 'title', placeholder: 'Position'},
-                        {name: 'company', placeholder: 'Company'},
-                        {name: 'start_date', placeholder: 'Start Date'},
-                        {name: 'end_date', placeholder: 'End Date'},
+                        {name: 'title', placeholder: t('profile.fields.position')},
+                        {name: 'company', placeholder: t('profile.fields.company')},
+                        {name: 'start_date', placeholder: t('profile.fields.start_date')},
+                        {name: 'end_date', placeholder: t('profile.fields.end_date')},
                     ]) :
                     id === 'education' ? renderObjectListForm('education', [
-                        {name: 'university', placeholder: 'University'},
-                        {name: 'degree', placeholder: 'Degree'},
-                        {name: 'start_date', placeholder: 'Start Date'},
-                        {name: 'end_date', placeholder: 'End Date'},
+                        {name: 'university', placeholder: t('profile.fields.university')},
+                        {name: 'degree', placeholder: t('profile.fields.degree')},
+                        {name: 'start_date', placeholder: t('profile.fields.start_date')},
+                        {name: 'end_date', placeholder: t('profile.fields.end_date')},
                     ]) :
                     id === 'languages' ? renderObjectListForm('languages', [
-                        {name: 'language', placeholder: 'Language'},
-                        {name: 'level', placeholder: 'Level'},
+                        {name: 'language', placeholder: t('profile.fields.language')},
+                        {name: 'level', placeholder: t('profile.fields.level')},
                     ]) :
-                    id === 'skills' ? renderGenericListForm('skills', 'Skill') :
-                    id === 'achievements' ? renderGenericListForm('achievements', 'Achievement') :
+                    id === 'skills' ? renderGenericListForm('skills', t('profile.fields.skill')) :
+                    id === 'achievements' ? renderGenericListForm('achievements', t('profile.fields.achievement')) :
                     null
                   )
                 : (
                     id === 'personal' ? renderSimpleData('personal', [
-                        {name: 'full_name', placeholder: 'Full Name'},
-                        {name: 'email', placeholder: 'Email'},
-                        {name: 'phone_number', placeholder: 'Phone'},
-                        {name: 'address', placeholder: 'Address'},
-                        {name: 'citizenship', placeholder: 'Citizenship'},
+                        {name: 'full_name', placeholder: t('profile.fields.full_name')},
+                        {name: 'email', placeholder: t('profile.fields.email')},
+                        {name: 'phone_number', placeholder: t('profile.fields.phone')},
+                        {name: 'address', placeholder: t('profile.fields.address')},
+                        {name: 'citizenship', placeholder: t('profile.fields.citizenship')},
                     ]) :
                     id === 'preferences' ? renderSimpleData('preferences', [
-                        {name: 'desired_position', placeholder: 'Desired Position'},
-                        {name: 'desired_city', placeholder: 'Desired City'},
-                        {name: 'desired_format', placeholder: 'Work Format'},
-                        {name: 'desired_work_time', placeholder: 'Work Schedule'},
-                        {name: 'industries', placeholder: 'Industries'},
+                        {name: 'desired_position', placeholder: t('profile.fields.desired_position')},
+                        {name: 'desired_city', placeholder: t('profile.fields.desired_city')},
+                        {name: 'desired_format', placeholder: t('profile.fields.desired_format')},
+                        {name: 'desired_work_time', placeholder: t('profile.fields.desired_work_time')},
+                        {name: 'industries', placeholder: t('profile.fields.industries')},
                     ]) :
-                    (profile && profile[id] && Component ? <Component {...{ [id]: profile[id] }} /> : <span className="not-filled">Not filled</span>)
+                    (profile && profile[id] && Component ? <Component {...{ [id]: profile[id] }} /> : <span className="not-filled">{t('profile.not_filled')}</span>)
                   )
               }
               </Section>

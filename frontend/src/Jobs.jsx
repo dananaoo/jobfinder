@@ -3,30 +3,9 @@ import { useTranslation } from 'react-i18next';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-function formatRelativeDate(dateStr) {
-  if (!dateStr) return '';
-  const now = new Date();
-  const date = new Date(dateStr);
-  const diffMs = now - date;
-  const diffSec = Math.floor(diffMs / 1000);
-  const diffMin = Math.floor(diffSec / 60);
-  const diffHour = Math.floor(diffMin / 60);
-  const diffDay = Math.floor(diffHour / 24);
+// formatRelativeDate moved inside component to access t()
 
-  if (diffSec < 60) return 'just now';
-  if (diffMin < 60) return `${diffMin} minute${diffMin === 1 ? '' : 's'} ago`;
-  if (diffHour < 24) return `${diffHour} hour${diffHour === 1 ? '' : 's'} ago`;
-  if (diffDay < 7) return `${diffDay} day${diffDay === 1 ? '' : 's'} ago`;
-  // If more than a week, show date
-  return date.toLocaleDateString();
-}
-
-const formatOptions = [
-  { value: '', label: 'Any format' },
-  { value: 'online', label: 'Online' },
-  { value: 'offline', label: 'Offline' },
-  { value: 'hybrid', label: 'Hybrid' },
-];
+// formatOptions будет создан внутри компонента для доступа к t()
 
 const JOBS_PER_PAGE = 5;
 
@@ -43,6 +22,40 @@ function Jobs() {
     location: '',
   });
   const [page, setPage] = useState(0);
+
+  const formatOptions = [
+    { value: '', label: t('jobs.format_any') },
+    { value: 'online', label: t('jobs.format_online') },
+    { value: 'offline', label: t('jobs.format_offline') },
+    { value: 'hybrid', label: t('jobs.format_hybrid') },
+  ];
+
+  const formatRelativeDate = (dateStr) => {
+    if (!dateStr) return '';
+    const now = new Date();
+    const date = new Date(dateStr);
+    const diffMs = now - date;
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHour = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHour / 24);
+
+    if (diffSec < 60) return t('jobs.just_now');
+    if (diffMin < 60) {
+      const s = diffMin === 1 ? '' : 's';
+      return t('jobs.minutes_ago', { count: diffMin, s });
+    }
+    if (diffHour < 24) {
+      const s = diffHour === 1 ? '' : 's';
+      return t('jobs.hours_ago', { count: diffHour, s });
+    }
+    if (diffDay < 7) {
+      const s = diffDay === 1 ? '' : 's';
+      return t('jobs.days_ago', { count: diffDay, s });
+    }
+    // If more than a week, show date
+    return date.toLocaleDateString();
+  };
 
   const fetchJobs = async (customFilters = filters) => {
     setLoading(true);
@@ -110,7 +123,7 @@ function Jobs() {
             value={filters.salary_min} 
             onChange={handleFilterChange} 
             className="jobs-filter-input" 
-            placeholder="e.g. 100000" 
+            placeholder={t('jobs.placeholder_salary')} 
           />
         </div>
         <div className="jobs-filter-group">
@@ -121,7 +134,7 @@ function Jobs() {
             value={filters.industry} 
             onChange={handleFilterChange} 
             className="jobs-filter-input" 
-            placeholder="e.g. IT, Marketing" 
+            placeholder={t('jobs.placeholder_industry')} 
           />
         </div>
         <div className="jobs-filter-group">
@@ -132,7 +145,7 @@ function Jobs() {
             value={filters.title} 
             onChange={handleFilterChange} 
             className="jobs-filter-input" 
-            placeholder="e.g. manager" 
+            placeholder={t('jobs.placeholder_job_title')} 
           />
         </div>
         <div className="jobs-filter-group">
@@ -154,7 +167,7 @@ function Jobs() {
             value={filters.location} 
             onChange={handleFilterChange} 
             className="jobs-filter-input" 
-            placeholder="e.g. Moscow" 
+            placeholder={t('jobs.placeholder_location')} 
           />
         </div>
         <div className="jobs-filter-buttons">
@@ -190,14 +203,14 @@ function Jobs() {
                   {job.title}
                   {job.location && <span className="job-location">{job.location}</span>}
                 </div>
-                {job.salary && <div className="job-salary">Salary: {job.salary}</div>}
-                {job.industry && <div style={{ color: '#6b6b8a', fontSize: '1rem', marginTop: 2, textAlign: 'left' }}>Industry: {job.industry}</div>}
-                {job.format && <div style={{ color: '#6b6b8a', fontSize: '1rem', marginTop: 2, textAlign: 'left' }}>Format: {job.format}</div>}
+                {job.salary && <div className="job-salary">{t('jobs.salary_label')}: {job.salary}</div>}
+                {job.industry && <div style={{ color: '#6b6b8a', fontSize: '1rem', marginTop: 2, textAlign: 'left' }}>{t('jobs.industry_label')}: {job.industry}</div>}
+                {job.format && <div style={{ color: '#6b6b8a', fontSize: '1rem', marginTop: 2, textAlign: 'left' }}>{t('jobs.format_label')}: {job.format}</div>}
                 <div className="job-description" style={{ margin: '1rem 0 0.5rem 0', color: 'var(--text-main)', fontSize: '1.05rem', lineHeight: 1.5, height: '80px', maxHeight: '80px', overflowY: 'auto', width: '100%', background: '#f8fafd', borderRadius: 8, padding: '8px 12px', textAlign: 'left' }}>{job.description}</div>
-                {job.created_at && <div className="job-date">Published: {formatRelativeDate(job.created_at)}</div>}
+                {job.created_at && <div className="job-date">{t('jobs.published')}: {formatRelativeDate(job.created_at)}</div>}
                 {job.contact_info && (
                   <div style={{ marginTop: 8, fontSize: '1rem', textAlign: 'left' }}>
-                    Contact: {/^(https?:\/\/|t\.me\/|tg:)/i.test(job.contact_info.trim()) ? (
+                    {t('jobs.contact')}: {/^(https?:\/\/|t\.me\/|tg:)/i.test(job.contact_info.trim()) ? (
                       <a
                         href={job.contact_info.trim().startsWith('http') ? job.contact_info.trim() : (job.contact_info.trim().startsWith('t.me') ? `https://${job.contact_info.trim()}` : job.contact_info.trim())}
                         target="_blank"
@@ -233,7 +246,7 @@ function Jobs() {
                   opacity: canPrev ? 1 : 0.7,
                   transition: 'background 0.2s',
                 }}
-              >Previous</button>
+              >{t('common.pagination_previous')}</button>
               <span style={{ fontWeight: 600, color: '#23243a', fontSize: '1rem', minWidth: 40, textAlign: 'center' }}>{page+1}/{totalPages}</span>
               <button
                 onClick={() => setPage(page+1)}
@@ -251,7 +264,7 @@ function Jobs() {
                   opacity: canNext ? 1 : 0.7,
                   transition: 'background 0.2s',
                 }}
-              >Next</button>
+              >{t('common.pagination_next')}</button>
             </div>
           )}
         </div>
