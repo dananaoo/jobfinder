@@ -67,9 +67,12 @@ function Jobs() {
       if (customFilters.title) params.append('title', customFilters.title);
       if (customFilters.format) params.append('format', customFilters.format);
       if (customFilters.location) params.append('location', customFilters.location);
-      const url = params.toString()
+      // Проверяем есть ли фильтры
+      const hasFilters = params.toString().length > 0;
+      
+      const url = hasFilters
         ? `${API_URL}/jobs/search?${params.toString()}`
-        : `${API_URL}/jobs/search`;
+        : `${API_URL}/jobs`; // Используем /jobs для всех вакансий без фильтров
       const res = await fetch(url);
               if (!res.ok) throw new Error(t('auth.error_fetch_jobs'));
       const data = await res.json();
@@ -204,12 +207,12 @@ function Jobs() {
                   {job.location && <span className="job-location">{job.location}</span>}
                 </div>
                 {job.salary && <div className="job-salary">{t('jobs.salary_label')}: {job.salary}</div>}
-                {job.industry && <div style={{ color: '#6b6b8a', fontSize: '1rem', marginTop: 2, textAlign: 'left' }}>{t('jobs.industry_label')}: {job.industry}</div>}
-                {job.format && <div style={{ color: '#6b6b8a', fontSize: '1rem', marginTop: 2, textAlign: 'left' }}>{t('jobs.format_label')}: {job.format}</div>}
-                <div className="job-description" style={{ margin: '1rem 0 0.5rem 0', color: 'var(--text-main)', fontSize: '1.05rem', lineHeight: 1.5, height: '80px', maxHeight: '80px', overflowY: 'auto', width: '100%', background: '#f8fafd', borderRadius: 8, padding: '8px 12px', textAlign: 'left' }}>{job.description}</div>
+                {job.industry && <div className="job-industry">{t('jobs.industry_label')}: {job.industry}</div>}
+                {job.format && <div className="job-format">{t('jobs.format_label')}: {job.format}</div>}
+                <div className="job-description">{job.description}</div>
                 {job.created_at && <div className="job-date">{t('jobs.published')}: {formatRelativeDate(job.created_at)}</div>}
                 {job.contact_info && (
-                  <div style={{ marginTop: 8, fontSize: '1rem', textAlign: 'left' }}>
+                  <div className="job-contact">
                     {t('jobs.contact')}: {/^(https?:\/\/|t\.me\/|tg:)/i.test(job.contact_info.trim()) ? (
                       <a
                         href={job.contact_info.trim().startsWith('http') ? job.contact_info.trim() : (job.contact_info.trim().startsWith('t.me') ? `https://${job.contact_info.trim()}` : job.contact_info.trim())}
@@ -220,7 +223,7 @@ function Jobs() {
                         {job.contact_info}
                       </a>
                     ) : (
-                      <span style={{ color: '#2e7d32', fontWeight: 500 }}>{job.contact_info}</span>
+                      <span className="job-contact-text">{job.contact_info}</span>
                     )}
                   </div>
                 )}
