@@ -39,7 +39,7 @@ async def create_or_update_job_post(db: AsyncSession, job: JobPostCreate):
 
 # ✅ Получить все вакансии
 async def get_all_jobs(db: AsyncSession):
-    result = await db.execute(select(JobPost))
+    result = await db.execute(select(JobPost).order_by(JobPost.created_at.desc()))
     return result.scalars().all()
 
 
@@ -163,10 +163,11 @@ async def search_jobs(db: AsyncSession, salary_min=None, industry=None, title=No
         filters.append(JobPost.format.ilike(f"%{format}%"))
     if location:
         filters.append(JobPost.location.ilike(f"%{location}%"))
-    # Если фильтры не заданы — свежие вакансии за сутки
-    if not filters:
-        one_day_ago = datetime.utcnow() - timedelta(days=1)
-        filters.append(JobPost.created_at >= one_day_ago)
-    stmt = stmt.where(and_(*filters)).order_by(JobPost.created_at.desc())
+    
+    # Применяем фильтры только если они есть
+    if filters:
+        stmt = stmt.where(and_(*filters))
+    
+    stmt = stmt.order_by(JobPost.created_at.desc())
     result = await db.execute(stmt)
     return result.scalars().all()
