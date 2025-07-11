@@ -108,6 +108,17 @@ function Jobs() {
   const canPrev = page > 0;
   const canNext = page < totalPages - 1;
 
+  // Функции для пагинации со скроллом наверх
+  const handlePrevPage = () => {
+    setPage(page - 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNextPage = () => {
+    setPage(page + 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="page jobs-page-container">
       {/* Page Title - должен быть первым */}
@@ -187,19 +198,14 @@ function Jobs() {
             <button 
               onClick={() => fetchJobs()} 
               disabled={loading} 
-              className="refresh-btn"
-              style={{ 
-                background: loading ? '#e0f1fa' : '#a084e8', 
-                color: loading ? '#bbb' : '#fff', 
-                cursor: loading ? 'not-allowed' : 'pointer'
-              }}
+              className={`refresh-btn ${loading ? 'refresh-btn-loading' : 'refresh-btn-active'}`}
             >
               {loading ? t('jobs.loading') : t('common.refresh')}
             </button>
           </div>
-          {error && <div style={{ color: '#c94a4a', marginTop: 10 }}>{error}</div>}
-          <div className="jobs-list" style={{ marginTop: 0 }}>
-            {paginatedJobs.length === 0 && !loading && <div style={{ color: '#888', fontSize: '1.1rem', marginTop: 40 }}>{t('jobs.no_jobs')}</div>}
+          {error && <div className="jobs-error-message">{error}</div>}
+          <div className="jobs-list">
+            {paginatedJobs.length === 0 && !loading && <div className="jobs-empty-message">{t('jobs.no_jobs')}</div>}
             {paginatedJobs.map(job => (
               <div className="job-card" key={job.id}>
                 <div className="job-title">
@@ -232,41 +238,17 @@ function Jobs() {
           </div>
           {/* Pagination Controls */}
           {totalPages > 1 && (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 18, marginTop: 32 }}>
+            <div className="pagination-container">
               <button
-                onClick={() => setPage(page-1)}
+                onClick={handlePrevPage}
                 disabled={!canPrev}
-                style={{
-                  background: canPrev ? '#a084e8' : '#e0f1fa',
-                  color: canPrev ? '#fff' : '#bbb',
-                  fontWeight: 500,
-                  fontSize: '1rem',
-                  border: 'none',
-                  borderRadius: 12,
-                  padding: '0.7em 1.5em',
-                  minWidth: 110,
-                  cursor: canPrev ? 'pointer' : 'not-allowed',
-                  opacity: canPrev ? 1 : 0.7,
-                  transition: 'background 0.2s',
-                }}
+                className={`pagination-btn ${canPrev ? 'pagination-btn-active' : 'pagination-btn-disabled'}`}
               >{t('common.pagination_previous')}</button>
-              <span style={{ fontWeight: 600, color: '#23243a', fontSize: '1rem', minWidth: 40, textAlign: 'center' }}>{page+1}/{totalPages}</span>
+              <span className="pagination-info">{page+1}/{totalPages}</span>
               <button
-                onClick={() => setPage(page+1)}
+                onClick={handleNextPage}
                 disabled={!canNext}
-                style={{
-                  background: canNext ? '#a084e8' : '#e0f1fa',
-                  color: canNext ? '#fff' : '#bbb',
-                  fontWeight: 500,
-                  fontSize: '1rem',
-                  border: 'none',
-                  borderRadius: 12,
-                  padding: '0.7em 1.5em',
-                  minWidth: 110,
-                  cursor: canNext ? 'pointer' : 'not-allowed',
-                  opacity: canNext ? 1 : 0.7,
-                  transition: 'background 0.2s',
-                }}
+                className={`pagination-btn ${canNext ? 'pagination-btn-active' : 'pagination-btn-disabled'}`}
               >{t('common.pagination_next')}</button>
             </div>
           )}

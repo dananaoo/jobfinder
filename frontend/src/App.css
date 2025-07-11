@@ -328,10 +328,21 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  margin-top: 2rem;
+  margin-top: 0;
   max-width: 700px;
   margin-left: auto;
   margin-right: auto;
+}
+
+.jobs-error-message {
+  color: #c94a4a;
+  margin-top: 10px;
+}
+
+.jobs-empty-message {
+  color: #888;
+  font-size: 1.1rem;
+  margin-top: 40px;
 }
 
 .job-card {
@@ -394,6 +405,47 @@ body {
 .job-contact-text {
   color: #2e7d32;
   font-weight: 500;
+}
+
+/* Pagination styles */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+  margin-top: 32px;
+}
+
+.pagination-btn {
+  font-weight: 500;
+  font-size: 1rem;
+  border: none;
+  border-radius: 12px;
+  padding: 0.7em 1.5em;
+  min-width: 110px;
+  transition: background 0.2s;
+}
+
+.pagination-btn-active {
+  background: #a084e8;
+  color: #fff;
+  cursor: pointer;
+  opacity: 1;
+}
+
+.pagination-btn-disabled {
+  background: #e0f1fa;
+  color: #bbb;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.pagination-info {
+  font-weight: 600;
+  color: #23243a;
+  font-size: 1rem;
+  min-width: 40px;
+  text-align: center;
 }
 .job-date {
   font-size: 0.95rem;
@@ -892,15 +944,12 @@ input[type="file"] {
 }
 
 .refresh-btn {
-  background: var(--accent-blue);
-  color: #fff;
   border: none;
   border-radius: 10px;
   padding: 0.5em 1.3em;
   font-size: 1.08rem;
   font-weight: 600;
   height: 44px;
-  cursor: pointer;
   transition: background 0.2s, color 0.2s;
   display: flex;
   align-items: center;
@@ -908,8 +957,20 @@ input[type="file"] {
   box-sizing: border-box;
 }
 
-.refresh-btn:hover {
+.refresh-btn-active {
+  background: var(--accent-blue);
+  color: #fff;
+  cursor: pointer;
+}
+
+.refresh-btn-active:hover {
   background: #a770efcc;
+}
+
+.refresh-btn-loading {
+  background: #e0f1fa;
+  color: #bbb;
+  cursor: not-allowed;
 }
 
 /* Main content container for Jobs page */
@@ -1515,6 +1576,32 @@ input[type="file"] {
     font-size: 0.9rem;
     margin-top: 6px;
   }
+
+  .pagination-container {
+    gap: 12px;
+    margin-top: 24px;
+  }
+  
+  .pagination-btn {
+    min-width: 90px;
+    font-size: 0.9rem;
+    padding: 0.6em 1.2em;
+  }
+  
+  .pagination-info {
+    font-size: 0.9rem;
+    min-width: 35px;
+  }
+
+  .jobs-error-message {
+    font-size: 0.9rem;
+    margin-top: 8px;
+  }
+
+  .jobs-empty-message {
+    font-size: 1rem;
+    margin-top: 30px;
+  }
   
   .job-date {
     font-size: 0.85rem;
@@ -1601,6 +1688,33 @@ input[type="file"] {
     font-size: 0.85rem;
     margin-top: 5px;
   }
+
+  .pagination-container {
+    gap: 8px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  
+  .pagination-btn {
+    min-width: 70px;
+    font-size: 0.85rem;
+    padding: 0.5em 1em;
+  }
+  
+  .pagination-info {
+    font-size: 0.85rem;
+    min-width: 30px;
+  }
+
+  .jobs-error-message {
+    font-size: 0.85rem;
+    margin-top: 6px;
+  }
+
+  .jobs-empty-message {
+    font-size: 0.95rem;
+    margin-top: 25px;
+  }
   
   .job-date {
     font-size: 0.8rem;
@@ -1671,47 +1785,7 @@ input[type="file"] {
   }
 }
 
-/* Pagination responsive */
-@media (max-width: 768px) {
-  .page div[style*="display: flex"][style*="gap: 18"] {
-    gap: 12px !important;
-    margin-top: 24px !important;
-  }
-  
-  .page div[style*="display: flex"][style*="gap: 18"] button {
-    min-width: 90px !important;
-    font-size: 0.9rem !important;
-    padding: 0.6em 1.2em !important;
-  }
-  
-  .page div[style*="display: flex"][style*="gap: 18"] span {
-    font-size: 0.9rem !important;
-    min-width: 35px !important;
-  }
-}
 
-@media (max-width: 480px) {
-  .page div[style*="display: flex"][style*="gap: 18"] {
-    gap: 8px !important;
-    margin-top: 20px !important;
-    flex-wrap: wrap !important;
-    justify-content: center !important;
-  }
-  
-  .page div[style*="display: flex"][style*="gap: 18"] button {
-    min-width: 75px !important;
-    font-size: 0.8rem !important;
-    padding: 0.5em 1em !important;
-  }
-  
-  .page div[style*="display: flex"][style*="gap: 18"] span {
-    font-size: 0.8rem !important;
-    min-width: 30px !important;
-    order: -1 !important;
-    width: 100% !important;
-    margin-bottom: 8px !important;
-  }
-}
 
 /* Empty message responsive */
 @media (max-width: 768px) {
